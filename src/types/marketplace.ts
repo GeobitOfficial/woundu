@@ -1,0 +1,120 @@
+export type UserRole = "buyer" | "seller" | "admin";
+
+export type ProductStatus = "draft" | "active" | "paused" | "sold" | "archived";
+
+export type ProductCondition = "new" | "like_new" | "used" | "refurbished";
+
+export type OrderStatus =
+  | "pending"
+  | "paid"
+  | "processing"
+  | "completed"
+  | "cancelled"
+  | "refunded";
+
+export type Profile = Readonly<{
+  id: string;
+  fullName: string;
+  username: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
+  role: UserRole;
+  reputationScore: number;
+  reviewsCount: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}>;
+
+export type Category = Readonly<{
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}>;
+
+export type Product = Readonly<{
+  id: string;
+  sellerId: string;
+  categoryId: string | null;
+  title: string;
+  slug: string;
+  description: string;
+  price: number;
+  currency: string;
+  condition: ProductCondition;
+  status: ProductStatus;
+  city: string | null;
+  country: string | null;
+  isFeatured: boolean;
+  viewsCount: number;
+  favoritesCount: number;
+  /** Promedio de estrellas de reseñas del producto (0 si no hay reseñas). */
+  ratingAverage: number;
+  /** Cantidad de reseñas asociadas al producto. */
+  reviewCount: number;
+  /** Precio de referencia (tachado) para mostrar oferta; debe ser mayor que `price`. */
+  compareAtPrice: number | null;
+  /** `true` cuando hay oferta activa (`compareAtPrice` > `price`). */
+  isOnOffer: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}>;
+export type ProductImage = Readonly<{
+  id: string;
+  productId: string;
+  storagePath: string;
+  altText: string | null;
+  sortOrder: number;
+  isPrimary: boolean;
+  createdAt: string;
+}>;
+
+export type Favorite = Readonly<{
+  userId: string;
+  productId: string;
+  createdAt: string;
+}>;
+
+export type Review = Readonly<{
+  id: string;
+  productId: string;
+  reviewerId: string;
+  sellerId: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
+}>;
+
+export type Order = Readonly<{
+  id: string;
+  buyerId: string;
+  status: OrderStatus;
+  subtotal: number;
+  total: number;
+  currency: string;
+  paymentReference: string | null;
+  createdAt: string;
+  updatedAt: string;
+  cancelledAt: string | null;
+  completedAt: string | null;
+}>;
+
+export type OrderItem = Readonly<{
+  id: string;
+  orderId: string;
+  productId: string;
+  sellerId: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  createdAt: string;
+}>;

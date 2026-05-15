@@ -1,0 +1,626 @@
+---
+alwaysApply: true
+---
+
+# AGENTS.md — Woundu Marketplace
+
+## Proyecto
+
+Nombre del proyecto: Woundu
+
+Tipo de proyecto:
+Marketplace moderno desarrollado con React, Next.js y Supabase.
+
+Stack principal:
+
+- React
+- Next.js (App Router)
+- TypeScript
+- TailwindCSS
+- Supabase
+
+Objetivo:
+Construir un marketplace moderno, escalable, rápido, mantenible y preparado para crecimiento futuro.
+
+La IA que participe en el desarrollo debe seguir estrictamente todas las reglas de este documento.
+
+---
+
+# Filosofía del proyecto
+
+Woundu debe desarrollarse siguiendo estos principios:
+
+- Código limpio
+- Arquitectura escalable
+- UX moderna
+- Mobile First
+- SEO optimizado
+- Componentización extrema
+- Performance primero
+- Seguridad primero
+- Tipado estricto
+- Reutilización máxima
+- Simplicidad sobre complejidad
+
+---
+
+# Stack oficial
+
+## Frontend
+
+- React
+- Next.js App Router
+- TypeScript
+- TailwindCSS
+- shadcn/ui
+- Lucide React
+- React Hook Form
+- Zod
+- TanStack Query
+- Zustand (solo si realmente es necesario)
+
+## Backend
+
+Inicialmente NO se utilizará backend separado en Node.js.
+
+Toda la lógica debe implementarse usando:
+
+- Supabase Database
+- Supabase Auth
+- Supabase Storage
+- Supabase Edge Functions
+- Supabase Realtime
+- PostgreSQL RLS Policies
+
+Solo se permitirá backend externo personalizado si:
+
+- Supabase tiene limitaciones reales
+- el performance lo requiere
+- la escalabilidad lo exige
+- la seguridad avanzada lo necesita
+
+---
+
+# Arquitectura
+
+## Estructura de carpetas
+
+```txt
+src/
+│
+├── app/
+├── components/
+│   ├── ui/
+│   ├── shared/
+│   ├── forms/
+│   ├── marketplace/
+│   └── layout/
+│
+├── features/
+│   ├── auth/
+│   ├── products/
+│   ├── users/
+│   ├── orders/
+│   ├── chat/
+│   ├── reviews/
+│   └── payments/
+│
+├── services/
+│   ├── supabase/
+│   ├── api/
+│   └── storage/
+│
+├── lib/
+├── hooks/
+├── utils/
+├── types/
+├── constants/
+├── validations/
+└── styles/
+```
+
+---
+
+# Reglas de arquitectura
+
+## Separación de responsabilidades
+
+NO mezclar:
+
+- UI
+- lógica de negocio
+- queries
+- validaciones
+- tipos
+- servicios
+
+Cada responsabilidad debe estar desacoplada.
+
+---
+
+## Componentes
+
+Todos los componentes deben ser:
+
+- pequeños
+- reutilizables
+- desacoplados
+- fáciles de mantener
+
+Evitar componentes gigantes.
+
+Si un componente supera aproximadamente 250 líneas:
+- dividirlo.
+
+---
+
+## Tipado
+
+Usar TypeScript estricto.
+
+Prohibido:
+
+- any
+- tipado implícito
+- tipos ambiguos
+
+Todo debe tener tipos claros.
+
+---
+
+## Validaciones
+
+Toda validación debe implementarse usando:
+
+- Zod
+
+Frontend y backend deben compartir validaciones cuando sea posible.
+
+---
+
+## Queries y acceso a datos
+
+Toda interacción con Supabase debe pasar por:
+
+```txt
+/services
+```
+
+NO hacer queries directamente dentro de componentes.
+
+---
+
+# Diseño UI/UX
+
+## Estilo visual
+
+Woundu debe sentirse:
+
+- moderno
+- minimalista
+- premium
+- limpio
+- rápido
+- elegante
+
+Inspiraciones:
+
+- Airbnb
+- Stripe
+- Shopify
+- Linear
+- Vercel
+
+---
+
+## Responsive Design
+
+Todo debe desarrollarse:
+- Mobile First
+
+La IA debe asumir que la mayoría de usuarios usarán dispositivos móviles.
+
+---
+
+## Accesibilidad
+
+Siempre:
+
+- usar labels
+- aria-labels
+- navegación por teclado
+- contraste adecuado
+- componentes accesibles
+
+---
+
+# Reglas de Next.js
+
+## App Router obligatorio
+
+Usar:
+
+```txt
+/app
+```
+
+NO usar:
+- Pages Router antiguo.
+
+---
+
+## Server Components
+
+Preferir:
+- React Server Components
+
+Usar Client Components solo cuando:
+
+- existan hooks
+- exista interactividad
+- exista manejo de estado
+- existan eventos del navegador
+
+---
+
+## Data Fetching
+
+Preferir:
+
+- Server Actions
+- Server Components
+
+Evitar:
+
+- useEffect innecesario para fetching
+
+---
+
+# Reglas de Supabase
+
+## Autenticación
+
+Usar exclusivamente:
+
+- Supabase Auth
+
+Métodos iniciales:
+
+- email/password
+- Google OAuth
+
+Arquitectura preparada para futuros providers.
+
+---
+
+## Seguridad
+
+OBLIGATORIO:
+
+- RLS habilitado en TODAS las tablas
+
+Nunca crear tablas públicas inseguras.
+
+---
+
+## Base de datos
+
+Usar:
+
+- UUIDs
+- timestamps
+- índices
+- relaciones limpias
+- soft delete cuando aplique
+
+---
+
+## Realtime
+
+Realtime solo debe utilizarse para:
+
+- chat
+- notificaciones
+- tracking en vivo
+- eventos importantes
+
+Evitar abuso de realtime.
+
+---
+
+# Funcionalidades principales del marketplace
+
+## Usuarios
+
+- registro
+- login
+- perfiles
+- avatars
+- roles
+
+## Productos
+
+- CRUD
+- imágenes
+- categorías
+- favoritos
+- filtros
+- búsqueda
+
+### Calificación del producto y ofertas
+
+- Cada producto expone **calificación promedio en estrellas** (1–5) y **conteo de reseñas**, derivados de la tabla `reviews` y mantenidos en columnas agregadas en `products` (`rating_average`, `reviews_count`) para filtros y rendimiento en el marketplace.
+- Las **ofertas** se modelan con **precio de venta** (`price`) y opcionalmente **precio de referencia** (`compare_at_price`) mayor que el precio de venta; el flag `is_on_offer` se calcula en base de datos (trigger) cuando aplica.
+- El marketplace permite filtrar por **mínimo de estrellas**, **rango de precio** y **solo ofertas**, además de categoría y país.
+
+### Catalogación por país
+
+- Cada producto se publica **asociado a un país** (campo de país en la publicación) para mantener **orden en el catálogo**, filtros coherentes y una experiencia clara para compradores y vendedores.
+- El listado de países cubiertos por el marketplace debe alinearse con la constante de referencia en código: `src/constants/latinAmericaCountries.ts` (países soberanos de Latinoamérica y el Caribe en español).
+- La UI pública de referencia de países vive en la ruta `/paises`.
+
+**Países de referencia (Latinoamérica y Caribe, nombres en español):**
+
+Antigua y Barbuda, Argentina, Bahamas, Barbados, Belice, Bolivia, Brasil, Chile, Colombia, Costa Rica, Cuba, Dominica, Ecuador, El Salvador, Granada, Guatemala, Guyana, Haití, Honduras, Jamaica, México, Nicaragua, Panamá, Paraguay, Perú, República Dominicana, San Cristóbal y Nieves, San Vicente y las Granadinas, Santa Lucía, Surinam, Trinidad y Tobago, Uruguay, Venezuela.
+
+## Marketplace
+
+- publicaciones
+- ratings
+- reviews
+- reputación
+
+## Chat
+
+- conversaciones privadas
+- mensajes en tiempo real
+
+## Órdenes
+
+- checkout
+- historial
+- estados
+
+## Pagos
+
+Arquitectura preparada para futuras integraciones.
+
+---
+
+# Convenciones de código
+
+## Componentes
+
+Usar PascalCase.
+
+Ejemplo:
+
+```txt
+ProductCard.tsx
+```
+
+---
+
+## Hooks
+
+Usar:
+
+```txt
+useSomething
+```
+
+Ejemplo:
+
+```txt
+useAuth
+```
+
+---
+
+## Variables
+
+Usar camelCase.
+
+---
+
+## Constantes
+
+Usar:
+
+```txt
+UPPER_SNAKE_CASE
+```
+
+---
+
+# Reglas TailwindCSS
+
+## Prohibido
+
+- estilos inline innecesarios
+- clases gigantes ilegibles
+- CSS desordenado
+
+---
+
+## Permitido
+
+- componentes reutilizables
+- variantes reutilizables
+- utilidades limpias
+
+---
+
+# Performance
+
+La IA debe priorizar:
+
+- lazy loading
+- dynamic imports
+- optimización de imágenes
+- memoización inteligente
+- evitar rerenders innecesarios
+- paginación
+- virtualización cuando sea necesaria
+
+---
+
+# SEO
+
+Todas las páginas públicas deben tener:
+
+- metadata
+- open graph
+- títulos optimizados
+- descripciones
+- URLs limpias
+
+---
+
+# Manejo de errores
+
+Siempre:
+
+- manejar errores
+- mostrar mensajes amigables
+- evitar crashes
+- usar error boundaries cuando aplique
+
+---
+
+# Logs y limpieza
+
+NO dejar en producción:
+
+- console.log
+- código muerto
+- comentarios innecesarios
+
+---
+
+# Git
+
+## Formato de commits
+
+```txt
+type(scope): message
+```
+
+Ejemplos:
+
+```txt
+feat(auth): add google login
+fix(products): resolve upload issue
+refactor(chat): optimize realtime subscriptions
+```
+
+---
+
+# Testing
+
+Cuando sea necesario usar:
+
+- Vitest
+- Testing Library
+
+Priorizar testing en:
+
+- lógica crítica
+- validaciones
+- servicios
+
+---
+
+# Regla de oro
+
+Antes de implementar cualquier solución, la IA debe preguntarse:
+
+"¿Esto escalará correctamente cuando Woundu tenga miles de usuarios?"
+
+Si la respuesta es no:
+- rediseñar la solución.
+
+---
+
+# Reglas críticas
+
+La IA NO debe:
+
+- crear archivos innecesarios
+- sobreingenierizar
+- duplicar lógica
+- usar librerías innecesarias
+- usar estados globales innecesarios
+- romper separación de responsabilidades
+- ignorar performance
+- ignorar seguridad
+
+---
+
+# Orden recomendado de desarrollo
+
+1. Setup inicial
+2. Sistema de diseño
+3. Auth
+4. Base de datos
+5. Marketplace core
+6. Productos
+7. Búsqueda
+8. Chat
+9. Órdenes
+10. Pagos
+11. Optimización
+12. Analytics
+13. Escalabilidad
+
+---
+
+# Configuración recomendada
+
+## TypeScript
+
+Activar strict mode.
+
+---
+
+## ESLint
+
+Usar reglas estrictas.
+
+---
+
+## Prettier
+
+Formato consistente obligatorio.
+
+---
+
+# Objetivo final
+
+Woundu debe sentirse como:
+
+- una startup tecnológica moderna
+- rápida
+- premium
+- confiable
+- altamente escalable
+
+La IA debe actuar como:
+
+- arquitecto senior
+- frontend senior
+- backend senior
+- experto en performance
+- experto en UX
+- experto en Supabase
+- experto en Next.js
+
+Todas las decisiones deben favorecer:
+
+- mantenibilidad
+- simplicidad
+- escalabilidad
+- performance
+- experiencia de usuario
+
+---
