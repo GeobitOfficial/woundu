@@ -69,6 +69,8 @@ const PRODUCTS_SELECT = `
 
 export async function getMarketplaceCategories(): Promise<Category[]> {
   const supabase = await createSupabaseServerClient();
+  if (!supabase) return [];
+
   const { data, error } = await supabase
     .from("categories")
     .select(
@@ -91,6 +93,8 @@ export async function getActiveProductCountByCategoryId(): Promise<
   ReadonlyMap<string, number>
 > {
   const supabase = await createSupabaseServerClient();
+  if (!supabase) return new Map();
+
   const { data, error } = await supabase
     .from("products")
     .select("category_id")
@@ -115,6 +119,16 @@ export async function getActiveProductCountByCategoryId(): Promise<
 
 export async function getLandingPageSnapshot(): Promise<LandingPageSnapshot> {
   const supabase = await createSupabaseServerClient();
+  if (!supabase) {
+    return {
+      activeProductCount: 0,
+      activeCategoryCount: 0,
+      onOfferProductCount: 0,
+      productsWithReviewsCount: 0,
+      sellersWithActiveListings: 0,
+      showcasedProduct: null,
+    };
+  }
 
   const [
     activeProducts,
@@ -221,6 +235,8 @@ export async function getMarketplaceProducts(
   filters: MarketplaceProductFilters = {},
 ): Promise<ProductCardItem[]> {
   const supabase = await createSupabaseServerClient();
+  if (!supabase) return [];
+
   const categoryId = filters.categorySlug
     ? await getCategoryIdBySlug(filters.categorySlug)
     : null;
@@ -294,6 +310,8 @@ export async function getMarketplaceProducts(
 
 async function getCategoryIdBySlug(slug: string) {
   const supabase = await createSupabaseServerClient();
+  if (!supabase) return null;
+
   const { data, error } = await supabase
     .from("categories")
     .select("id")

@@ -94,13 +94,18 @@ export default async function MarketplacePage({
       : [];
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const viewerId = user?.id ?? null;
-  const favoriteProductIds = viewerId
-    ? [...(await getFavoriteProductIds(supabase, viewerId, products.map((p) => p.id)))]
-    : [];
+  let viewerId: string | null = null;
+  let favoriteProductIds: string[] = [];
+
+  if (supabase) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    viewerId = user?.id ?? null;
+    favoriteProductIds = viewerId
+      ? [...(await getFavoriteProductIds(supabase, viewerId, products.map((p) => p.id)))]
+      : [];
+  }
 
   return (
     <main className="min-h-screen px-4 py-8">

@@ -6,6 +6,11 @@ import { createSupabaseServerClient } from "@/services/supabase/server";
 
 export default async function AccountPage() {
   const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    redirect("/login?next=%2Fcuenta");
+  }
+
   const {
     data: { user },
     error: userError,

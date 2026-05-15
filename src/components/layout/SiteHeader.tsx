@@ -4,7 +4,12 @@ import { SiteHeaderClient } from "./SiteHeaderClient";
 
 export async function SiteHeader() {
   const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.auth.getUser();
+  let isLoggedIn = false;
 
-  return <SiteHeaderClient isLoggedIn={Boolean(data.user)} />;
+  if (supabase) {
+    const { data } = await supabase.auth.getUser();
+    isLoggedIn = Boolean(data.user);
+  }
+
+  return <SiteHeaderClient isLoggedIn={isLoggedIn} />;
 }
