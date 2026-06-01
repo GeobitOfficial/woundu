@@ -27,12 +27,15 @@ export function buildLandingHomeCopy(
       ? "Sin publicaciones aún"
       : `${activeProductCount} ${plural(activeProductCount, "publicación activa", "publicaciones activas")}`;
 
-  const heroTitle = "Woundu";
+  const heroTitle =
+    activeProductCount === 0
+      ? "Tu marketplace en Latinoamérica"
+      : "Encuentra lo que buscas al mejor precio";
 
   const heroSubtitle =
     activeProductCount === 0
-      ? "Aún no hay productos en el catálogo. Publica el primero o vuelve más tarde."
-      : `Explora ${activeProductCount} ${plural(activeProductCount, "producto activo", "productos activos")} en ${activeCategoryCount} ${plural(activeCategoryCount, "categoría", "categorías")}, ofrecidos por ${sellersWithActiveListings} ${plural(sellersWithActiveListings, "vendedor", "vendedores")}.`;
+      ? "Publica, compra y descubre productos en un solo lugar. Empieza hoy en Woundu."
+      : `Más de ${activeProductCount} ${plural(activeProductCount, "producto", "productos")} activos en ${activeCategoryCount} ${plural(activeCategoryCount, "categoría", "categorías")}. Compra con confianza y filtra por país.`;
 
   const heroStats = [
     {

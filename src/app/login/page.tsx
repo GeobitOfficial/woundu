@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 
 import { AuthLayout, LoginForm } from "@/components/forms";
 
@@ -16,9 +15,7 @@ export default function LoginPage() {
       eyebrow="Acceso seguro"
       title="Vuelve a tu marketplace."
     >
-      <Suspense fallback={<div aria-hidden className="min-h-[12rem]" />}>
-        <LoginForm />
-      </Suspense>
+      <LoginForm />
     </AuthLayout>
   );
 }

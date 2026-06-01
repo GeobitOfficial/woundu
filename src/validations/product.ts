@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { LATIN_AMERICA_COUNTRIES } from "@/constants/latinAmericaCountries";
+import { MARKETPLACE_COUNTRIES } from "@/constants/marketplaceCountries";
 
-const countryValues = LATIN_AMERICA_COUNTRIES as readonly string[];
+const marketplaceCountryValues = MARKETPLACE_COUNTRIES as readonly string[];
 
 const optionalComparePrice = z.preprocess((value) => {
   if (value === "" || value === null || value === undefined) {
@@ -36,8 +36,8 @@ export const createProductSchema = z
       .trim()
       .min(1, "Selecciona un país.")
       .refine(
-        (value) => countryValues.includes(value),
-        "Selecciona un país de la lista regional.",
+        (value) => marketplaceCountryValues.includes(value),
+        "Selecciona un país de la lista.",
       ),
     compareAtPrice: optionalComparePrice,
   })
@@ -53,3 +53,7 @@ export const createProductSchema = z
   });
 
 export type CreateProductFormValues = z.infer<typeof createProductSchema>;
+
+export const updateProductSchema = createProductSchema;
+
+export type UpdateProductFormValues = z.infer<typeof updateProductSchema>;

@@ -17,7 +17,7 @@ export function CatalogEmptyState({ countryName }: CatalogEmptyStateProps) {
     : "Se el primero en compartir una publicacion atractiva y llegar a nuevos compradores dentro de Woundu.";
 
   return (
-    <section className="rounded-[2rem] border border-dashed border-emerald-200/80 bg-white/90 p-8 text-center shadow-inner shadow-emerald-900/5 backdrop-blur-sm">
+    <section className="rounded-[2rem] border border-dashed border-brand/30 bg-white/90 p-8 text-center shadow-inner shadow-brand/5 backdrop-blur-sm">
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
         <PackageSearch aria-hidden="true" className="h-7 w-7" />
       </div>

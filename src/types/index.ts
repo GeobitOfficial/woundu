@@ -12,3 +12,11 @@ export type {
   Review,
   UserRole,
 } from "./marketplace";
+export type {
+  AdminSupportTicketRecord,
+  SupportTicketDetail,
+  SupportTicketMessage,
+  SupportTicketStatus,
+  SupportTicketSummary,
+  UserSupportTicketSummary,
+} from "./support";

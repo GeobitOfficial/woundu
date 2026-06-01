@@ -5,6 +5,9 @@ import type { ProductCardItem } from "./types";
 export type MarketplaceCategorySection = Readonly<{
   key: string;
   title: string;
+  description?: string | null;
+  icon?: string | null;
+  slug?: string;
   products: ProductCardItem[];
 }>;
 
@@ -27,6 +30,9 @@ export function buildMarketplaceCategorySections(
       sections.push({
         key: category.slug,
         title: category.name,
+        description: category.description,
+        icon: category.icon,
+        slug: category.slug,
         products: inCategory,
       });
     }

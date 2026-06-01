@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import {
-  CatalogEmptyState,
   CatalogProductSections,
   MarketplaceCategorySection,
+  MarketplaceCatalogWithFavorites,
   MarketplaceFiltersPanel,
 } from "@/components/marketplace";
 import {
@@ -15,16 +16,15 @@ import {
   getMarketplaceCategories,
   getMarketplaceProducts,
 } from "@/features/products";
+import { buildProductCountByCategoryId } from "@/lib/marketplaceCategoryCounts";
 import {
   type MarketplaceHrefValues,
   parseMinStarsQueryParam,
   parseOnSaleQueryParam,
   parsePriceQueryParam,
 } from "@/lib/marketplaceFilters";
-import { getFavoriteProductIds } from "@/services/supabase/favorites/favoriteService";
-import { createSupabaseServerClient } from "@/services/supabase/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Marketplace",
@@ -88,58 +88,64 @@ export default async function MarketplacePage({
     }),
   ]);
 
+  const productCountByCategoryId = buildProductCountByCategoryId(products);
+  const selectedCategory = categorySlug
+    ? categories.find((c) => c.slug === categorySlug)
+    : undefined;
+
   const categorySections =
     products.length > 0
       ? buildMarketplaceCategorySections(categories, products)
       : [];
 
-  const supabase = await createSupabaseServerClient();
-  let viewerId: string | null = null;
-  let favoriteProductIds: string[] = [];
-
-  if (supabase) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    viewerId = user?.id ?? null;
-    favoriteProductIds = viewerId
-      ? [...(await getFavoriteProductIds(supabase, viewerId, products.map((p) => p.id)))]
-      : [];
-  }
+  const pageTitle = selectedCategory
+    ? selectedCategory.name
+    : countryForQuery
+      ? `Productos en ${countryForQuery}`
+      : "Marketplace Woundu";
 
   return (
-    <main className="min-h-screen px-4 py-8">
-      <section className="mx-auto max-w-6xl">
-        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-700">
-              Marketplace
+    <main className="min-h-screen bg-[#eaeded]">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <header className="mb-6 overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-[#232f3e] px-4 py-4 text-white sm:px-6">
+            <p className="text-xs font-bold uppercase tracking-wide text-brand">
+              Catálogo comercial
             </p>
-            <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">
-              {countryForQuery
-                ? `Productos en ${countryForQuery}`
-                : "Explora productos en Woundu."}
-            </h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
-              Primero elige una categoría en la cuadrícula. Luego ajusta filtros
-              de búsqueda, precio y ofertas, y el país desde la barra superior.
+            <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{pageTitle}</h1>
+            <p className="mt-2 max-w-3xl text-sm text-slate-300">
+              Productos segmentados por categoría con precio, calificación y
+              ofertas. Usa los departamentos para filtrar o ajusta búsqueda y
+              precio abajo.
             </p>
           </div>
-          <div className="rounded-2xl border border-emerald-100/70 bg-white/90 px-5 py-4 shadow-sm shadow-emerald-900/10 backdrop-blur-sm">
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-              Resultados
-            </p>
-            <p className="mt-1 text-2xl font-black text-slate-950">
-              {products.length}
-            </p>
+          <div className="flex flex-wrap items-center gap-6 px-4 py-4 sm:px-6">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                Resultados
+              </p>
+              <p className="text-2xl font-bold text-slate-950">{products.length}</p>
+            </div>
+            {selectedCategory ? (
+              <div className="rounded-sm bg-brand-light px-3 py-2 text-sm text-brand-dark">
+                Filtrando: <strong>{selectedCategory.name}</strong>
+              </div>
+            ) : null}
+            {countryForQuery ? (
+              <div className="rounded-sm bg-brand-light px-3 py-2 text-sm text-brand-dark">
+                País: <strong>{countryForQuery}</strong>
+              </div>
+            ) : null}
           </div>
-        </div>
+        </header>
 
-        <div className="mt-8 space-y-8">
+        <div className="space-y-6">
           <MarketplaceCategorySection
             categories={categories}
             hrefState={hrefState}
+            productCountByCategoryId={productCountByCategoryId}
             selectedCategorySlug={categorySlug}
+            totalProductCount={products.length}
           />
 
           <MarketplaceFiltersPanel
@@ -147,17 +153,29 @@ export default async function MarketplacePage({
             hrefState={hrefState}
           />
 
-          {products.length > 0 ? (
-            <CatalogProductSections
-              favoriteProductIds={favoriteProductIds}
+          <Suspense
+            fallback={
+              products.length > 0 ? (
+                <CatalogProductSections
+                  favoriteProductIds={[]}
+                  hrefState={hrefState}
+                  sections={categorySections}
+                  viewerId={null}
+                />
+              ) : (
+                <div className="h-48 animate-pulse rounded-sm bg-white" />
+              )
+            }
+          >
+            <MarketplaceCatalogWithFavorites
+              countryName={countryForQuery}
+              hrefState={hrefState}
+              products={products}
               sections={categorySections}
-              viewerId={viewerId}
             />
-          ) : (
-            <CatalogEmptyState countryName={countryForQuery} />
-          )}
+          </Suspense>
         </div>
-      </section>
+      </div>
     </main>
   );
 }

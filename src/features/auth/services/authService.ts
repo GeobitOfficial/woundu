@@ -27,6 +27,8 @@ export async function signInWithEmail({ email, password }: AuthCredentials) {
 }
 
 export async function signUpWithEmail({
+  country,
+  currency,
   email,
   fullName,
   password,
@@ -38,6 +40,8 @@ export async function signUpWithEmail({
       emailRedirectTo: getAuthCallbackUrl(DEFAULT_POST_AUTH_PATH),
       data: {
         full_name: fullName,
+        country,
+        currency,
       },
     },
   });

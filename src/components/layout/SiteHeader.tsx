@@ -1,15 +1,17 @@
-import { createSupabaseServerClient } from "@/services/supabase/server";
+import { getAuthenticatedProfile } from "@/services/supabase/auth/getAuthenticatedProfile";
+import { getAuthenticatedUser } from "@/services/supabase/auth/getAuthenticatedUser";
+import { isSuperAdmin } from "@/lib/auth/roles";
 
 import { SiteHeaderClient } from "./SiteHeaderClient";
 
 export async function SiteHeader() {
-  const supabase = await createSupabaseServerClient();
-  let isLoggedIn = false;
+  const user = await getAuthenticatedUser();
+  const profile = user ? await getAuthenticatedProfile() : null;
 
-  if (supabase) {
-    const { data } = await supabase.auth.getUser();
-    isLoggedIn = Boolean(data.user);
-  }
-
-  return <SiteHeaderClient isLoggedIn={isLoggedIn} />;
+  return (
+    <SiteHeaderClient
+      isLoggedIn={Boolean(user)}
+      isSuperAdmin={isSuperAdmin(profile?.role)}
+    />
+  );
 }

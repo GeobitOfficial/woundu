@@ -1,30 +1,27 @@
+import { Suspense } from "react";
+
 import {
-  CategoryPreview,
-  FeatureSection,
-  LandingHero,
-  TrustSection,
-} from "@/components/marketplace";
-import {
-  buildLandingHomeCopy,
-  getLandingPageData,
-} from "@/features/products";
+  LandingCatalogSections,
+  LandingProductsSkeleton,
+} from "@/components/marketplace/LandingCatalogSections";
+import { LandingHeroSection } from "@/components/marketplace/LandingHeroSection";
 
 export const revalidate = 60;
 
-export default async function Home() {
-  const { snapshot, categories, countByCategoryId } =
-    await getLandingPageData();
-  const copy = buildLandingHomeCopy(snapshot);
-
+export default function Home() {
   return (
-    <main>
-      <LandingHero copy={copy} snapshot={snapshot} />
-      <FeatureSection features={copy.features} />
-      <CategoryPreview
-        categories={categories}
-        countByCategoryId={countByCategoryId}
-      />
-      <TrustSection trust={copy.trust} />
+    <main className="bg-[#eaeded]">
+      <Suspense
+        fallback={
+          <div className="h-36 animate-pulse bg-[#eaeded]" aria-hidden="true" />
+        }
+      >
+        <LandingHeroSection />
+      </Suspense>
+
+      <Suspense fallback={<LandingProductsSkeleton />}>
+        <LandingCatalogSections />
+      </Suspense>
     </main>
   );
 }

@@ -9,6 +9,8 @@ export type AccountProfileView = Readonly<{
   role: UserRole;
   reputationScore: number;
   reviewsCount: number;
+  country: string | null;
+  currency: string;
 }>;
 
 export type BuyerOrderItemView = Readonly<{
@@ -71,4 +73,28 @@ export type AccountDashboardSnapshot = Readonly<{
   productStats: SellerProductStatsView;
   sellerSalesTotals: SellerSalesTotalsView;
   favoriteProducts: ReadonlyArray<AccountFavoriteProductView>;
+}>;
+
+export type SellerEarningsMonthBucket = Readonly<{
+  monthKey: string;
+  monthLabel: string;
+  completedAmount: number;
+  inProgressAmount: number;
+  cancelledOrRefundedAmount: number;
+  ordersCount: number;
+  unitsSold: number;
+}>;
+
+export type SellerEarningsSnapshot = Readonly<{
+  rangeLabel: string;
+  rangeStartIso: string;
+  rangeEndIso: string;
+  sellerCurrency: string;
+  totals: SellerSalesTotalsView;
+  lines: ReadonlyArray<SellerOrderLineView>;
+  monthlyBreakdown: ReadonlyArray<SellerEarningsMonthBucket>;
+  ordersCount: number;
+  unitsSold: number;
+  completedOrdersCount: number;
+  excludedOtherCurrencyCount: number;
 }>;

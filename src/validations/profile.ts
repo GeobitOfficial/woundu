@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+import { LATIN_AMERICA_COUNTRIES } from "@/constants/latinAmericaCountries";
+
+const profileCountryValues = LATIN_AMERICA_COUNTRIES as readonly string[];
+
 export const updateProfileSchema = z.object({
   fullName: z
     .string()
@@ -20,6 +24,13 @@ export const updateProfileSchema = z.object({
     .trim()
     .max(500, "La bio no puede superar 500 caracteres.")
     .transform((value) => (value === "" ? undefined : value)),
+  country: z
+    .string()
+    .trim()
+    .min(1, "Selecciona tu pais.")
+    .refine((value) => profileCountryValues.includes(value), {
+      message: "Selecciona un pais valido de Latinoamerica.",
+    }),
 });
 
 export type UpdateProfileFormValues = z.infer<typeof updateProfileSchema>;

@@ -29,48 +29,13 @@ export function MarketplaceFiltersPanel({
     hrefState.onSaleOnly;
 
   return (
-    <section className="rounded-[2rem] border border-cyan-100/70 bg-white/95 p-4 shadow-sm shadow-cyan-900/10 backdrop-blur-sm">
-      <div className="mb-4 flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-            Filtros
-          </p>
-          <p className="mt-1 text-sm text-slate-600">
-            Búsqueda, precio, calificación por estrellas y ofertas. Se combinan
-            con la categoría elegida arriba y el país en la barra superior.
-          </p>
-        </div>
-        {activeCountryName ? (
-          <p className="text-sm text-slate-700 sm:text-right">
-            <span className="font-semibold text-slate-950">País:</span>{" "}
-            {activeCountryName}
-            <span className="mx-2 text-slate-300" aria-hidden="true">
-              ·
-            </span>
-            <Link
-              className="font-semibold text-emerald-700 underline-offset-2 hover:underline"
-              href={toMarketplaceHref({
-                categorySlug: hrefState.categorySlug,
-                search: hrefState.search,
-                countrySlug: undefined,
-                minPrice: hrefState.minPrice,
-                maxPrice: hrefState.maxPrice,
-                minStars: hrefState.minStars,
-                onSaleOnly: hrefState.onSaleOnly,
-              })}
-            >
-              Ver todos los países
-            </Link>
-          </p>
-        ) : (
-          <p className="max-w-sm text-sm text-slate-600 sm:text-right">
-            <span className="font-semibold text-slate-800">País:</span> elige uno
-            en la barra superior para acotar por región.
-          </p>
-        )}
-      </div>
+    <section className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
+      <FiltersHeader
+        activeCountryName={activeCountryName}
+        hrefState={hrefState}
+      />
 
-      <form action="/marketplace" className="space-y-5" method="get">
+      <form action="/marketplace" className="space-y-5 p-4 sm:p-5" method="get">
         {hrefState.categorySlug ? (
           <input name="categoria" type="hidden" value={hrefState.categorySlug} />
         ) : null}
@@ -155,7 +120,7 @@ export function MarketplaceFiltersPanel({
             </span>
             <span className="flex items-center gap-2">
               <input
-                className="h-4 w-4 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
+                className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
                 defaultChecked={hrefState.onSaleOnly}
                 id="solo_ofertas"
                 name="solo_ofertas"
@@ -186,3 +151,54 @@ export function MarketplaceFiltersPanel({
     </section>
   );
 }
+
+function FiltersHeader({
+  activeCountryName,
+  hrefState,
+}: Readonly<{
+  hrefState: MarketplaceHrefValues;
+  activeCountryName?: string;
+}>) {
+  return (
+    <div className="flex flex-col gap-3 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+          Filtros
+        </p>
+        <p className="mt-1 text-sm text-slate-600">
+          Búsqueda, precio, calificación por estrellas y ofertas. Se combinan con
+          la categoría elegida arriba y el país en la barra superior.
+        </p>
+      </div>
+      {activeCountryName ? (
+        <p className="text-sm text-slate-700 sm:text-right">
+          <span className="font-semibold text-slate-950">País:</span>{" "}
+          {activeCountryName}
+          <span className="mx-2 text-slate-300" aria-hidden="true">
+            ·
+          </span>
+          <Link
+            className="font-semibold text-brand underline-offset-2 hover:underline"
+            href={toMarketplaceHref({
+              categorySlug: hrefState.categorySlug,
+              search: hrefState.search,
+              countrySlug: undefined,
+              minPrice: hrefState.minPrice,
+              maxPrice: hrefState.maxPrice,
+              minStars: hrefState.minStars,
+              onSaleOnly: hrefState.onSaleOnly,
+            })}
+          >
+            Ver todos los países
+          </Link>
+        </p>
+      ) : (
+        <p className="max-w-sm text-sm text-slate-600 sm:text-right">
+          <span className="font-semibold text-slate-800">País:</span> elige uno
+          en la barra superior para acotar por región.
+        </p>
+      )}
+    </div>
+  );
+}
+

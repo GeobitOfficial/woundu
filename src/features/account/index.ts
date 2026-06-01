@@ -4,6 +4,8 @@ export type {
   AccountProfileView,
   BuyerOrderItemView,
   BuyerOrderView,
+  SellerEarningsMonthBucket,
+  SellerEarningsSnapshot,
   SellerOrderLineView,
   SellerProductStatsView,
   SellerSalesTotalsView,

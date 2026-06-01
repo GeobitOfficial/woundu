@@ -1,4 +1,8 @@
 import { getCurrentUser, supabase } from "@/services/supabase/client";
+import {
+  getCurrencyForCountryName,
+  isLatinAmericaCountry,
+} from "@/constants/countryCurrencies";
 import type { UpdateProfileFormValues } from "@/validations/profile";
 
 export async function updateProfile(
@@ -10,12 +14,23 @@ export async function updateProfile(
     return { error: "Debes iniciar sesion para actualizar tu perfil." };
   }
 
+  if (!isLatinAmericaCountry(values.country)) {
+    return { error: "Selecciona un pais valido de Latinoamerica." };
+  }
+
+  const currency = getCurrencyForCountryName(values.country);
+  if (!currency) {
+    return { error: "No encontramos la moneda para ese pais." };
+  }
+
   const { error } = await supabase
     .from("profiles")
     .update({
       full_name: values.fullName,
       username: values.username ?? null,
       bio: values.bio ?? null,
+      country: values.country,
+      currency,
     })
     .eq("id", userData.user.id);
 

@@ -6,6 +6,8 @@ export type AuthCredentials = Readonly<{
 export type RegisterCredentials = AuthCredentials &
   Readonly<{
     fullName: string;
+    country: string;
+    currency: string;
   }>;
 
 export type AuthProvider = "google";

@@ -1,6 +1,9 @@
-import { LockKeyhole, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { ShieldCheck, Store, TrendingUp } from "lucide-react";
 
+import { buttonVariants } from "@/components/ui";
 import type { LandingHomeCopy } from "@/features/products";
+import { cn } from "@/lib/utils";
 
 type TrustSectionProps = Readonly<{
   trust: LandingHomeCopy["trust"];
@@ -8,47 +11,90 @@ type TrustSectionProps = Readonly<{
 
 export function TrustSection({ trust }: TrustSectionProps) {
   return (
-    <section
-      className="border-y border-violet-100/50 bg-gradient-to-b from-cyan-50/50 via-violet-50/30 to-emerald-50/50 py-20"
-      id="confianza"
-    >
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-[2rem] bg-slate-950 p-6 text-white shadow-2xl shadow-slate-950/15 sm:p-10 lg:p-12">
-          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-            <div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
-                <ShieldCheck aria-hidden="true" className="h-6 w-6" />
-              </div>
-              <h2 className="mt-6 text-3xl font-black tracking-tight sm:text-4xl">
-                {trust.headline}
-              </h2>
-              <p className="mt-4 text-base leading-7 text-slate-300">
-                {trust.subheadline}
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-              <div className="flex items-center gap-3 border-b border-white/10 pb-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400 text-emerald-950">
-                  <LockKeyhole aria-hidden="true" className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-400">{trust.asideTitle}</p>
-                  <p className="font-bold">{trust.asideSubtitle}</p>
-                </div>
-              </div>
-              <ul className="mt-5 space-y-4">
-                {trust.bullets.map((item) => (
-                  <li className="flex gap-3 text-sm text-slate-200" key={item}>
-                    <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-emerald-300" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+    <section className="pb-10 pt-2" id="confianza">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
+            <TrustSellerPanel trust={trust} />
+          </div>
+          <div className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
+            <TrustBuyerPanel trust={trust} />
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function TrustSellerPanel({
+  trust,
+}: Readonly<{ trust: LandingHomeCopy["trust"] }>) {
+  return (
+    <div className="flex h-full flex-col p-6 sm:p-8">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-muted text-brand-dark">
+        <Store aria-hidden="true" className="h-6 w-6" />
+      </div>
+      <h2 className="mt-4 text-xl font-bold text-slate-950 sm:text-2xl">
+        Vende en Woundu
+      </h2>
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        Publica productos, llega a compradores en Latinoamérica y construye
+        reputación con reseñas reales.
+      </p>
+      <ul className="mt-4 space-y-2 text-sm text-slate-700">
+        {trust.bullets.map((item) => (
+          <li className="flex gap-2" key={item}>
+            <TrendingUp
+              aria-hidden="true"
+              className="mt-0.5 h-4 w-4 shrink-0 text-brand"
+            />
+            {item}
+          </li>
+        ))}
+      </ul>
+      <Link
+        className={cn(
+          buttonVariants({ className: "mt-6 w-full sm:w-auto", variant: "primary" }),
+        )}
+        href="/publicar"
+      >
+        Empezar a vender
+      </Link>
+    </div>
+  );
+}
+
+function TrustBuyerPanel({
+  trust,
+}: Readonly<{ trust: LandingHomeCopy["trust"] }>) {
+  return (
+    <div className="flex h-full flex-col bg-[#232f3e] p-6 text-white sm:p-8">
+      <TrustBuyerPanelHeader />
+      <h2 className="mt-4 text-xl font-bold sm:text-2xl">{trust.headline}</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-300">{trust.subheadline}</p>
+      <div className="mt-6 rounded-sm border border-white/10 bg-white/5 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand">
+          {trust.asideTitle}
+        </p>
+        <p className="mt-1 font-bold">{trust.asideSubtitle}</p>
+      </div>
+      <Link
+        className={cn(
+          buttonVariants({ className: "mt-6 w-full sm:w-auto", variant: "secondary" }),
+          "border-white/20 bg-white text-slate-900 hover:bg-slate-100",
+        )}
+        href="/marketplace"
+      >
+        Ir al marketplace
+      </Link>
+    </div>
+  );
+}
+
+function TrustBuyerPanelHeader() {
+  return (
+    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+      <ShieldCheck aria-hidden="true" className="h-6 w-6 text-brand" />
+    </div>
   );
 }

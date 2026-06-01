@@ -12,6 +12,8 @@ type ProfileRow = {
   role: UserRole;
   reputation_score: string | number;
   reviews_count: number;
+  country: string | null;
+  currency: string;
   deleted_at: string | null;
 };
 
@@ -99,6 +101,8 @@ function mapProfile(row: ProfileRow): AccountDashboardSnapshot["profile"] {
     role: row.role,
     reputationScore: Number(row.reputation_score),
     reviewsCount: row.reviews_count,
+    country: row.country?.trim() ? row.country.trim() : null,
+    currency: row.currency?.trim() ? row.currency.trim() : "USD",
   };
 }
 
@@ -116,7 +120,7 @@ export async function getAccountDashboard(
     supabase
       .from("profiles")
       .select(
-        "id, full_name, username, avatar_url, bio, role, reputation_score, reviews_count, deleted_at",
+        "id, full_name, username, avatar_url, bio, role, reputation_score, reviews_count, country, currency, deleted_at",
       )
       .eq("id", userId)
       .maybeSingle(),

@@ -1,7 +1,12 @@
 import { normalizePriceRange } from "@/lib/marketplaceFilters";
 import { createSupabaseServerClient } from "@/services/supabase/server";
 import type { Category, ProductImage } from "@/types";
+import { cache } from "react";
 
+import { buildHomeProductSections } from "../buildHomeProductSections";
+import type { HomeProductSectionData } from "../buildHomeProductSections";
+import { buildLandingCategoryShowcases } from "../buildLandingCategoryShowcases";
+import type { LandingCategoryShowcase } from "../buildLandingCategoryShowcases";
 import type {
   CategoryRow,
   LandingPageSnapshot,
@@ -12,13 +17,12 @@ import type {
   ProductSeller,
 } from "../types";
 
-const PRODUCTS_SELECT = `
+const PRODUCT_CARD_SELECT = `
   id,
   seller_id,
   category_id,
   title,
   slug,
-  description,
   price,
   currency,
   condition,
@@ -40,12 +44,9 @@ const PRODUCTS_SELECT = `
     id,
     name,
     slug,
-    description,
     icon,
     sort_order,
-    is_active,
-    created_at,
-    updated_at
+    is_active
   ),
   product_images (
     id,
@@ -53,19 +54,24 @@ const PRODUCTS_SELECT = `
     storage_path,
     alt_text,
     sort_order,
-    is_primary,
-    created_at
+    is_primary
   ),
   profiles (
     id,
     full_name,
     username,
     avatar_url,
-    role,
     reputation_score,
     reviews_count
   )
 `;
+
+const LANDING_CATALOG_LIMIT = 72;
+const LANDING_CAROUSEL_LIMIT = 20;
+const LANDING_POOL_LIMIT = 96;
+const SELLER_QUERY_LIMIT = 500;
+const DEFAULT_MARKETPLACE_LIMIT = 80;
+const MARKETPLACE_LIMIT_WITH_COUNTRY = 120;
 
 export async function getMarketplaceCategories(): Promise<Category[]> {
   const supabase = await createSupabaseServerClient();
@@ -117,7 +123,55 @@ export async function getActiveProductCountByCategoryId(): Promise<
   return counts;
 }
 
-export async function getLandingPageSnapshot(): Promise<LandingPageSnapshot> {
+/**
+ * Conteo de productos activos por país (nombre canónico en español).
+ */
+export async function getActiveProductCountByCountry(): Promise<
+  ReadonlyMap<string, number>
+> {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return new Map();
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("country")
+    .eq("status", "active")
+    .is("deleted_at", null)
+    .not("country", "is", null);
+
+  if (error || !data) {
+    return new Map();
+  }
+
+  const counts = new Map<string, number>();
+  for (const row of data as ReadonlyArray<{ country: string | null }>) {
+    const country = row.country?.trim();
+    if (!country) {
+      continue;
+    }
+    counts.set(country, (counts.get(country) ?? 0) + 1);
+  }
+
+  return counts;
+}
+
+type LandingPageMetrics = Omit<LandingPageSnapshot, "showcasedProduct">;
+
+export const getLandingPageSnapshot = cache(async (): Promise<LandingPageSnapshot> => {
+  const [metrics, pool] = await Promise.all([
+    getLandingPageMetrics(),
+    fetchLandingProductPool(),
+  ]);
+  const showcasedProduct =
+    pool.find((product) => product.isFeatured) ?? pool[0] ?? null;
+
+  return {
+    ...metrics,
+    showcasedProduct,
+  };
+});
+
+const getLandingPageMetrics = cache(async (): Promise<LandingPageMetrics> => {
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
     return {
@@ -126,7 +180,6 @@ export async function getLandingPageSnapshot(): Promise<LandingPageSnapshot> {
       onOfferProductCount: 0,
       productsWithReviewsCount: 0,
       sellersWithActiveListings: 0,
-      showcasedProduct: null,
     };
   }
 
@@ -136,7 +189,6 @@ export async function getLandingPageSnapshot(): Promise<LandingPageSnapshot> {
     offerProducts,
     reviewedProducts,
     sellerRows,
-    featuredSingle,
   ] = await Promise.all([
     supabase
       .from("products")
@@ -163,36 +215,9 @@ export async function getLandingPageSnapshot(): Promise<LandingPageSnapshot> {
       .from("products")
       .select("seller_id")
       .eq("status", "active")
-      .is("deleted_at", null),
-    supabase
-      .from("products")
-      .select(PRODUCTS_SELECT)
-      .eq("status", "active")
       .is("deleted_at", null)
-      .eq("is_featured", true)
-      .order("published_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+      .limit(SELLER_QUERY_LIMIT),
   ]);
-
-  let showcasedProduct: ProductCardItem | null = null;
-  if (featuredSingle.data && !featuredSingle.error) {
-    showcasedProduct = mapProduct(
-      featuredSingle.data as unknown as ProductListRow,
-    );
-  } else {
-    const latest = await supabase
-      .from("products")
-      .select(PRODUCTS_SELECT)
-      .eq("status", "active")
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (latest.data && !latest.error) {
-      showcasedProduct = mapProduct(latest.data as unknown as ProductListRow);
-    }
-  }
 
   const sellerSet = new Set(
     (sellerRows.data as ReadonlyArray<{ seller_id: string }> | null)?.map(
@@ -208,28 +233,195 @@ export async function getLandingPageSnapshot(): Promise<LandingPageSnapshot> {
       ? 0
       : reviewedProducts.count ?? 0,
     sellersWithActiveListings: sellerRows.error ? 0 : sellerSet.size,
+  };
+});
+
+const fetchLandingProductPool = cache(async (): Promise<ProductCardItem[]> => {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_CARD_SELECT)
+    .eq("status", "active")
+    .is("deleted_at", null)
+    .order("is_featured", { ascending: false })
+    .order("published_at", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(LANDING_POOL_LIMIT);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return (data as unknown as ProductListRow[]).map(mapProduct);
+});
+
+const fetchLandingOfferProducts = cache(async (): Promise<ProductCardItem[]> => {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_CARD_SELECT)
+    .eq("status", "active")
+    .is("deleted_at", null)
+    .eq("is_on_offer", true)
+    .order("published_at", { ascending: false })
+    .limit(LANDING_CAROUSEL_LIMIT);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return (data as unknown as ProductListRow[]).map(mapProduct);
+});
+
+function deriveLandingProductSections(
+  pool: ReadonlyArray<ProductCardItem>,
+  offerProducts: ReadonlyArray<ProductCardItem>,
+): Readonly<{
+  catalogProducts: ProductCardItem[];
+  latestProducts: ProductCardItem[];
+  offerProducts: ProductCardItem[];
+  topRatedProducts: ProductCardItem[];
+  showcasedProduct: ProductCardItem | null;
+}> {
+  const catalogProducts = pool.slice(0, LANDING_CATALOG_LIMIT);
+  const latestProducts = [...pool]
+    .sort(
+      (first, second) =>
+        Date.parse(second.createdAt) - Date.parse(first.createdAt),
+    )
+    .slice(0, LANDING_CAROUSEL_LIMIT);
+  const topRatedProducts = [...pool]
+    .filter((product) => product.reviewCount > 0)
+    .sort((first, second) => {
+      if (second.reviewCount !== first.reviewCount) {
+        return second.reviewCount - first.reviewCount;
+      }
+
+      return second.ratingAverage - first.ratingAverage;
+    })
+    .slice(0, LANDING_CAROUSEL_LIMIT);
+  const showcasedProduct =
+    pool.find((product) => product.isFeatured) ?? pool[0] ?? null;
+
+  return {
+    catalogProducts,
+    latestProducts,
+    offerProducts: offerProducts.slice(0, LANDING_CAROUSEL_LIMIT),
+    topRatedProducts,
     showcasedProduct,
   };
 }
 
-export async function getLandingPageData(): Promise<
+async function getLandingPageDataInternal(): Promise<
   Readonly<{
-    snapshot: LandingPageSnapshot;
+    metrics: LandingPageMetrics;
+    showcasedProduct: ProductCardItem | null;
     categories: Category[];
-    countByCategoryId: ReadonlyMap<string, number>;
+    catalogProducts: ProductCardItem[];
+    latestProducts: ProductCardItem[];
+    offerProducts: ProductCardItem[];
+    topRatedProducts: ProductCardItem[];
+    categoryShowcases: LandingCategoryShowcase[];
+    productSections: HomeProductSectionData[];
   }>
 > {
-  const [snapshot, categories, countByCategoryId] = await Promise.all([
-    getLandingPageSnapshot(),
+  const [metrics, categories, pool, offerProducts] = await Promise.all([
+    getLandingPageMetrics(),
     getMarketplaceCategories(),
+    fetchLandingProductPool(),
+    fetchLandingOfferProducts(),
+  ]);
+
+  const sections = deriveLandingProductSections(pool, offerProducts);
+  const categoryShowcases = buildLandingCategoryShowcases(
+    categories,
+    sections.catalogProducts,
+  );
+  const productSections = buildHomeProductSections(categories, {
+    catalogProducts: sections.catalogProducts,
+    latestProducts: sections.latestProducts,
+    offerProducts: sections.offerProducts,
+    topRatedProducts: sections.topRatedProducts,
+    pool,
+  });
+
+  return {
+    metrics,
+    showcasedProduct: sections.showcasedProduct,
+    categories,
+    catalogProducts: sections.catalogProducts,
+    latestProducts: sections.latestProducts,
+    offerProducts: sections.offerProducts,
+    topRatedProducts: sections.topRatedProducts,
+    categoryShowcases,
+    productSections,
+  };
+}
+
+export async function getLandingPageProducts(): Promise<
+  Readonly<{
+    catalogProducts: ProductCardItem[];
+    latestProducts: ProductCardItem[];
+    offerProducts: ProductCardItem[];
+    topRatedProducts: ProductCardItem[];
+  }>
+> {
+  const [pool, offerProducts] = await Promise.all([
+    fetchLandingProductPool(),
+    fetchLandingOfferProducts(),
+  ]);
+
+  const sections = deriveLandingProductSections(pool, offerProducts);
+
+  return {
+    catalogProducts: sections.catalogProducts,
+    latestProducts: sections.latestProducts,
+    offerProducts: sections.offerProducts,
+    topRatedProducts: sections.topRatedProducts,
+  };
+}
+
+type LandingPageData = Readonly<{
+  snapshot: LandingPageSnapshot;
+  categories: Category[];
+  countByCategoryId: ReadonlyMap<string, number>;
+  latestProducts: ProductCardItem[];
+  offerProducts: ProductCardItem[];
+  topRatedProducts: ProductCardItem[];
+  catalogProducts: ProductCardItem[];
+  categoryShowcases: LandingCategoryShowcase[];
+  productSections: HomeProductSectionData[];
+}>;
+
+export const getLandingPageData = cache(async (): Promise<LandingPageData> => {
+  const [data, countByCategoryId] = await Promise.all([
+    getLandingPageDataInternal(),
     getActiveProductCountByCategoryId(),
   ]);
 
-  return { snapshot, categories, countByCategoryId };
-}
-
-const DEFAULT_MARKETPLACE_LIMIT = 200;
-const MARKETPLACE_LIMIT_WITH_COUNTRY = 500;
+  return {
+    snapshot: {
+      ...data.metrics,
+      showcasedProduct: data.showcasedProduct,
+    },
+    categories: data.categories,
+    countByCategoryId,
+    latestProducts: data.latestProducts,
+    offerProducts: data.offerProducts,
+    topRatedProducts: data.topRatedProducts,
+    catalogProducts: data.catalogProducts,
+    categoryShowcases: data.categoryShowcases,
+    productSections: data.productSections,
+  };
+});
 
 export async function getMarketplaceProducts(
   filters: MarketplaceProductFilters = {},
@@ -260,7 +452,7 @@ export async function getMarketplaceProducts(
 
   let query = supabase
     .from("products")
-    .select(PRODUCTS_SELECT)
+    .select(PRODUCT_CARD_SELECT)
     .eq("status", "active")
     .is("deleted_at", null)
     .order("is_featured", { ascending: false })
@@ -347,7 +539,7 @@ function mapProduct(row: ProductListRow): ProductCardItem {
     categoryId: row.category_id,
     title: row.title,
     slug: row.slug,
-    description: row.description,
+    description: row.description ?? "",
     price: Number(row.price),
     currency: row.currency,
     condition: row.condition,
@@ -390,12 +582,12 @@ function mapCategory(row: CategoryRow): Category {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    description: row.description,
+    description: row.description ?? "",
     icon: row.icon,
     sortOrder: row.sort_order,
     isActive: row.is_active,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: row.created_at ?? "",
+    updatedAt: row.updated_at ?? "",
   };
 }
 
@@ -407,7 +599,7 @@ function mapProductImage(row: ProductImageRow): ProductImage {
     altText: row.alt_text,
     sortOrder: row.sort_order,
     isPrimary: row.is_primary,
-    createdAt: row.created_at,
+    createdAt: row.created_at ?? "",
   };
 }
 

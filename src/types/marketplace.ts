@@ -1,6 +1,13 @@
-export type UserRole = "buyer" | "seller" | "admin";
+export type UserRole = "buyer" | "seller" | "admin" | "super_admin";
 
-export type ProductStatus = "draft" | "active" | "paused" | "sold" | "archived";
+export type ProductStatus =
+  | "draft"
+  | "pending_review"
+  | "active"
+  | "rejected"
+  | "paused"
+  | "sold"
+  | "archived";
 
 export type ProductCondition = "new" | "like_new" | "used" | "refurbished";
 
@@ -16,11 +23,15 @@ export type Profile = Readonly<{
   id: string;
   fullName: string;
   username: string | null;
+  email: string | null;
   avatarUrl: string | null;
   bio: string | null;
   role: UserRole;
   reputationScore: number;
   reviewsCount: number;
+  isBanned: boolean;
+  bannedAt: string | null;
+  banReason: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -62,6 +73,10 @@ export type Product = Readonly<{
   compareAtPrice: number | null;
   /** `true` cuando hay oferta activa (`compareAtPrice` > `price`). */
   isOnOffer: boolean;
+  /** Campos de moderación (panel admin). */
+  moderationNote?: string | null;
+  reviewedAt?: string | null;
+  reviewedBy?: string | null;
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;

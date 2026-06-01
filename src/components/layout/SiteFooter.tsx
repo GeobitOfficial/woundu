@@ -29,14 +29,14 @@ export function SiteFooter() {
           </div>
 
           <nav aria-label="Enlaces del pie de pagina">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand">
               Enlaces
             </p>
             <ul className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 sm:grid-cols-3">
               {FOOTER_LINKS.map((item) => (
                 <li key={item.href}>
                   <Link
-                    className="text-sm font-medium text-slate-300 transition hover:text-emerald-300"
+                    className="text-sm font-medium text-slate-300 transition hover:text-brand"
                     href={item.href}
                   >
                     {item.label}
@@ -52,7 +52,7 @@ export function SiteFooter() {
             © {year} {BRAND_NAME}. Todos los derechos reservados.
           </p>
           <p className="text-slate-500">
-            Hecho con Next.js, Supabase y mucho café.
+            Not FDA evaluated; not intended to diagnose, treat, cure, prevent disease.
           </p>
         </div>
       </div>

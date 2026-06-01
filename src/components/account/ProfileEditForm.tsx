@@ -114,7 +114,7 @@ export function ProfileEditForm({
         <p
           className={
             status.includes("guardados")
-              ? "rounded-2xl bg-emerald-50 px-4 py-2 text-sm text-emerald-800"
+              ? "rounded-2xl bg-brand-light px-4 py-2 text-sm text-brand-dark"
               : "rounded-2xl bg-red-50 px-4 py-2 text-sm text-red-700"
           }
         >

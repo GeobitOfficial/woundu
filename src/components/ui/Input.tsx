@@ -30,7 +30,7 @@ export function Input({
         aria-describedby={hasDescription ? descriptionId : undefined}
         aria-invalid={Boolean(error)}
         className={cn(
-          "h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm shadow-slate-950/5 transition placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-950/5",
+          "h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm shadow-slate-950/5 transition placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15",
           error &&
             "border-red-300 text-red-950 focus:border-red-400 focus:ring-red-500/10",
           className,

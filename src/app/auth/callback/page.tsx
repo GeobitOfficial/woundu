@@ -3,7 +3,9 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { supabase } from "@/services/supabase/client";
+import { getPostLoginRedirectPath } from "@/lib/auth/roles";
+import { signOut, supabase } from "@/services/supabase/client";
+import type { UserRole } from "@/types";
 
 /**
  * Un solo intercambio por código: en desarrollo, React Strict Mode ejecuta
@@ -24,6 +26,48 @@ function exchangeCodeForSessionOnce(code: string) {
     inflightCodeExchanges.set(code, pending);
   }
   return pending;
+}
+
+async function finishAuthRedirect(
+  router: ReturnType<typeof useRouter>,
+  fallbackPath: string,
+) {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData.session?.user.id;
+
+  if (!userId) {
+    router.replace(fallbackPath);
+    router.refresh();
+    return;
+  }
+
+  const { data: profileRow } = await supabase
+    .from("profiles")
+    .select("is_banned, ban_reason, role")
+    .eq("id", userId)
+    .maybeSingle();
+
+  const profile = profileRow as
+    | {
+        is_banned?: boolean;
+        ban_reason?: string | null;
+        role?: UserRole | null;
+      }
+    | null;
+
+  if (profile?.is_banned) {
+    await signOut();
+    redirectToLogin(
+      router,
+      "account_suspended",
+      profile.ban_reason ??
+        "Tu cuenta fue suspendida. Contacta soporte si crees que es un error.",
+    );
+    return;
+  }
+
+  router.replace(getPostLoginRedirectPath(profile?.role, fallbackPath));
+  router.refresh();
 }
 
 function redirectToLogin(
@@ -73,15 +117,13 @@ function AuthCallbackHandler() {
 
       if (!error) {
         setMessage("Sesión lista. Redirigiendo…");
-        router.replace(next);
-        router.refresh();
+        await finishAuthRedirect(router, next);
         return;
       }
 
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData.session) {
-        router.replace(next);
-        router.refresh();
+        await finishAuthRedirect(router, next);
         return;
       }
 

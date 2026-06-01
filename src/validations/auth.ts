@@ -1,7 +1,15 @@
 import { z } from "zod";
 
+import { LATIN_AMERICA_COUNTRIES } from "@/constants/latinAmericaCountries";
+
+const countryValues = LATIN_AMERICA_COUNTRIES as readonly string[];
+
 export const loginSchema = z.object({
-  email: z.string().trim().email("Ingresa un email valido."),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Ingresa un email valido."),
   password: z.string().min(1, "Ingresa tu contrasena."),
 });
 
@@ -17,6 +25,13 @@ export const registerSchema = z
       .string()
       .min(8, "La contrasena debe tener al menos 8 caracteres."),
     confirmPassword: z.string().min(1, "Confirma tu contrasena."),
+    country: z
+      .string()
+      .trim()
+      .min(1, "Selecciona tu pais.")
+      .refine((value) => countryValues.includes(value), {
+        message: "Selecciona un pais valido de Latinoamerica.",
+      }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Las contrasenas no coinciden.",

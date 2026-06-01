@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { ProductForm } from "@/components/forms";
 import { getMarketplaceCategories } from "@/features/products";
+import { getSellerLocale } from "@/services/supabase/account/getSellerLocale";
+import { createSupabaseServerClient } from "@/services/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -12,13 +15,30 @@ export const metadata: Metadata = {
 };
 
 export default async function PublishProductPage() {
-  const categories = await getMarketplaceCategories();
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    redirect("/login?next=%2Fpublicar");
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login?next=%2Fpublicar");
+  }
+
+  const [categories, sellerLocale] = await Promise.all([
+    getMarketplaceCategories(),
+    getSellerLocale(supabase, user.id),
+  ]);
 
   return (
     <main className="min-h-screen px-4 py-8">
       <section className="mx-auto max-w-4xl">
         <div className="mb-8">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-700">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-brand">
             Vender en Woundu
           </p>
           <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">
@@ -30,7 +50,7 @@ export default async function PublishProductPage() {
           </p>
         </div>
 
-        <ProductForm categories={categories} />
+        <ProductForm categories={categories} sellerLocale={sellerLocale} />
       </section>
     </main>
   );

@@ -1,9 +1,16 @@
-import { MapPin, Star } from "lucide-react";
+import { MapPin } from "lucide-react";
 
 import { Badge } from "@/components/ui";
 import type { ProductCardItem } from "@/features/products";
+import {
+  formatProductPrice,
+  getConditionLabel,
+  getProductDiscountPercent,
+} from "@/utils/productDisplay";
 
 import { ProductCardMarketActions } from "./ProductCardMarketActions";
+import { ProductRatingStars } from "./ProductRatingStars";
+import { ProductThumbnail } from "./ProductThumbnail";
 
 type ProductCardProps = Readonly<{
   product: ProductCardItem;
@@ -17,91 +24,78 @@ export function ProductCard({
   viewerId,
 }: ProductCardProps) {
   const location = [product.city, product.country].filter(Boolean).join(", ");
-  const hasProductReviews = product.reviewCount > 0;
-  const priceLabel = formatPrice(product.price, product.currency);
+  const priceLabel = formatProductPrice(product.price, product.currency);
+  const discount = getProductDiscountPercent(product);
 
   return (
-    <article className="group overflow-hidden rounded-3xl border border-emerald-100/50 bg-white/95 shadow-sm shadow-emerald-900/10 backdrop-blur-sm transition hover:-translate-y-1 hover:border-cyan-200/60 hover:shadow-xl hover:shadow-emerald-900/15">
-      <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-950 via-slate-800 to-emerald-500 p-4">
-        <div className="absolute right-4 top-4 flex flex-col items-end gap-2">
-          {product.isOnOffer ? (
-            <Badge
-              className="border-amber-200 bg-amber-500 text-white"
-              variant="neutral"
-            >
-              Oferta
-            </Badge>
-          ) : null}
-        </div>
-        <div className="flex h-full flex-col justify-end">
-          {product.primaryImage ? (
-            <p className="w-fit rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
-              Imagen lista
-            </p>
-          ) : (
-            <p className="w-fit rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
-              Sin imagen
-            </p>
-          )}
-        </div>
+    <article className="group flex h-full flex-col overflow-hidden rounded-sm border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md">
+      <div className="relative">
+        <ProductThumbnail
+          className="aspect-square border-b border-slate-100 p-4"
+          product={product}
+        />
+        {product.isOnOffer ? (
+          <Badge
+            className="absolute left-3 top-3 border-red-200 bg-red-600 text-white"
+            variant="neutral"
+          >
+            Oferta
+          </Badge>
+        ) : null}
       </div>
 
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            {product.category ? (
-              <Badge variant="brand">{product.category.name}</Badge>
+      <div className="flex flex-1 flex-col p-4">
+        {product.category ? (
+          <Badge className="w-fit" variant="brand">
+            {product.category.name}
+          </Badge>
+        ) : null}
+
+        <h2 className="mt-2 line-clamp-2 min-h-[2.75rem] text-sm font-semibold leading-snug text-slate-900">
+          {product.title}
+        </h2>
+
+        <div className="mt-3">
+          {product.isOnOffer && product.compareAtPrice != null ? (
+            <p className="text-xs text-slate-400 line-through">
+              {formatProductPrice(product.compareAtPrice, product.currency)}
+            </p>
+          ) : null}
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <p className="text-xl font-bold text-slate-950">{priceLabel}</p>
+            {discount != null ? (
+              <span className="text-sm font-bold text-brand">
+                {discount}% OFF
+              </span>
             ) : null}
-            <h2 className="mt-3 line-clamp-2 text-lg font-bold text-slate-950">
-              {product.title}
-            </h2>
-          </div>
-          <div className="shrink-0 text-right">
-            {product.isOnOffer && product.compareAtPrice != null ? (
-              <p className="text-xs font-medium text-slate-400 line-through">
-                {formatPrice(product.compareAtPrice, product.currency)}
-              </p>
-            ) : null}
-            <p className="text-lg font-black text-slate-950">{priceLabel}</p>
           </div>
         </div>
 
-        <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">
+        <div className="mt-3 border-t border-slate-100 pt-3">
+          <ProductRatingStars
+            ratingAverage={product.ratingAverage}
+            reviewCount={product.reviewCount}
+            size="sm"
+          />
+        </div>
+
+        <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">
           {product.description}
         </p>
 
-        <div className="mt-5 space-y-3 border-t border-slate-100 pt-4 text-sm text-slate-500">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="inline-flex items-center gap-1.5">
-              <Star
-                aria-hidden="true"
-                className={
-                  hasProductReviews ? "h-4 w-4 text-amber-400" : "h-4 w-4 text-slate-300"
-                }
-              />
-              <span>
-                {hasProductReviews
-                  ? `${product.ratingAverage.toFixed(1)} · ${product.reviewCount} reseña${product.reviewCount === 1 ? "" : "s"}`
-                  : "Sin reseñas aún"}
-              </span>
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
+          <span>{getConditionLabel(product.condition)}</span>
+          {location ? (
+            <span className="inline-flex items-center gap-0.5">
+              <MapPin aria-hidden="true" className="h-3 w-3" />
+              {location}
             </span>
-            {location ? (
-              <span className="inline-flex items-center gap-1.5">
-                <MapPin aria-hidden="true" className="h-4 w-4 shrink-0" />
-                {location}
-              </span>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-slate-400">
-            <Star aria-hidden="true" className="h-3.5 w-3.5 text-slate-400" />
+          ) : null}
+          {product.seller ? (
             <span>
-              Vendedor:{" "}
-              <span className="font-medium text-slate-600">
-                {product.seller?.reputationScore.toFixed(1) ?? "—"}
-              </span>{" "}
-              reputación
+              Vendedor {product.seller.reputationScore.toFixed(1)}★
             </span>
-          </div>
+          ) : null}
         </div>
 
         <ProductCardMarketActions
@@ -115,12 +109,4 @@ export function ProductCard({
       </div>
     </article>
   );
-}
-
-function formatPrice(price: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(price);
 }

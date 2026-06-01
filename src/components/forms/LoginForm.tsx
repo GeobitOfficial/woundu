@@ -1,18 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
 import { ZodError } from "zod";
 
-import { AuthDivider } from "@/components/forms/AuthDivider";
-import { GoogleSignInButton } from "@/components/forms/GoogleSignInButton";
-import { Button, Input } from "@/components/ui";
-import {
-  getGoogleSignInFallbackMessage,
-  signInWithEmail,
-  signInWithGoogle,
-} from "@/features/auth";
+import { Button, Input, PasswordInput } from "@/components/ui";
+import { signInWithEmail } from "@/features/auth";
+import { getPostLoginRedirectPath } from "@/lib/auth/roles";
+import { signOut, supabase } from "@/services/supabase/client";
+import type { UserRole } from "@/types";
 import { loginSchema, type LoginFormValues } from "@/validations/auth";
 
 type LoginErrors = Partial<Record<keyof LoginFormValues, string>>;
@@ -23,23 +20,9 @@ type FormStatus = Readonly<{
 
 export function LoginForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [errors, setErrors] = useState<LoginErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<FormStatus | null>(null);
-
-  useEffect(() => {
-    const oauthError = searchParams.get("error");
-    if (oauthError !== "oauth") {
-      return;
-    }
-    const code = searchParams.get("error_code");
-    const description = searchParams.get("error_description");
-    setStatus({
-      type: "error",
-      message: buildOauthErrorMessage(code, description),
-    });
-  }, [searchParams]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,7 +37,7 @@ export function LoginForm() {
       setStatus(null);
       setIsLoading(true);
 
-      const { error } = await signInWithEmail(values);
+      const { data: authData, error } = await signInWithEmail(values);
 
       if (error) {
         setStatus({
@@ -64,7 +47,41 @@ export function LoginForm() {
         return;
       }
 
-      router.push("/cuenta");
+      const userId = authData.user?.id;
+      if (!userId) {
+        setStatus({
+          type: "error",
+          message: "No pudimos iniciar sesion. Intentalo de nuevo.",
+        });
+        return;
+      }
+
+      const { data: profileRow, error: profileError } = await supabase
+        .from("profiles")
+        .select("is_banned, ban_reason, role")
+        .eq("id", userId)
+        .maybeSingle();
+
+      const profile = profileRow as
+        | {
+            is_banned?: boolean;
+            ban_reason?: string | null;
+            role?: UserRole | null;
+          }
+        | null;
+
+      if (!profileError && profile?.is_banned) {
+        await signOut();
+        setStatus({
+          type: "error",
+          message:
+            profile.ban_reason ??
+            "Tu cuenta fue suspendida. Contacta soporte si crees que es un error.",
+        });
+        return;
+      }
+
+      router.push(getPostLoginRedirectPath(profile?.role));
       router.refresh();
     } catch (error) {
       if (error instanceof ZodError) {
@@ -82,25 +99,10 @@ export function LoginForm() {
     }
   }
 
-  async function handleGoogleSignIn() {
-    setStatus(null);
-    setIsLoading(true);
-
-    const { error } = await signInWithGoogle();
-
-    if (error) {
-      setIsLoading(false);
-      setStatus({
-        type: "error",
-        message: getGoogleSignInFallbackMessage(error.message),
-      });
-    }
-  }
-
   return (
     <div>
       <div>
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-700">
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-brand">
           Iniciar sesion
         </p>
         <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
@@ -120,20 +122,19 @@ export function LoginForm() {
           placeholder="tu@email.com"
           type="email"
         />
-        <Input
+        <PasswordInput
           autoComplete="current-password"
           error={errors.password}
           label="Contrasena"
           name="password"
           placeholder="Tu contrasena"
-          type="password"
         />
 
         {status ? (
           <p
             className={
               status.type === "success"
-                ? "rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+                ? "rounded-2xl bg-brand-light px-4 py-3 text-sm text-brand-dark"
                 : "rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700"
             }
           >
@@ -146,15 +147,9 @@ export function LoginForm() {
         </Button>
       </form>
 
-      <div className="my-6">
-        <AuthDivider />
-      </div>
-
-      <GoogleSignInButton disabled={isLoading} onClick={handleGoogleSignIn} />
-
       <p className="mt-6 text-center text-sm text-slate-600">
         Aun no tienes cuenta?{" "}
-        <Link className="font-bold text-slate-950 hover:text-emerald-700" href="/registro">
+        <Link className="font-bold text-slate-950 hover:text-brand" href="/registro">
           Crear cuenta
         </Link>
       </p>
@@ -162,40 +157,33 @@ export function LoginForm() {
   );
 }
 
-function buildOauthErrorMessage(
-  code: string | null,
-  description: string | null,
-): string {
-  const prefix = "No pudimos completar el inicio con Google.";
-
-  if (code === "missing_code") {
-    return `${prefix} El proveedor no devolvió un código. Reintenta o revisa la configuración de Google.`;
-  }
-
-  if (code === "exchange_failed") {
-    const detail = description?.toLowerCase() ?? "";
-    if (detail.includes("code verifier") || detail.includes("pkce")) {
-      return `${prefix} Se perdió el estado de la sesión durante el flujo PKCE (cookies de Supabase). Asegúrate de usar el mismo dominio durante todo el flujo (no mezcles "localhost" con "127.0.0.1") y vuelve a intentarlo.`;
-    }
-    return `${prefix} Detalle del servidor: ${description ?? "intercambio de código fallido"}.`;
-  }
-
-  if (description) {
-    return `${prefix} ${description}`;
-  }
-
-  return `${prefix} Verifica en Supabase: Authentication → URL configuration que "${typeof window !== "undefined" ? window.location.origin : "tu sitio"}/auth/callback" esté en Redirect URLs y que el proveedor Google esté activo.`;
-}
-
 function getAuthErrorMessage(message: string) {
   const normalizedMessage = message.toLowerCase();
 
-  if (normalizedMessage.includes("invalid login credentials")) {
+  if (
+    normalizedMessage.includes("invalid login credentials") ||
+    normalizedMessage.includes("invalid credentials")
+  ) {
     return "El email o la contrasena no son correctos.";
   }
 
   if (normalizedMessage.includes("email not confirmed")) {
     return "Confirma tu email antes de iniciar sesion.";
+  }
+
+  if (
+    normalizedMessage.includes("failed to fetch") ||
+    normalizedMessage.includes("network") ||
+    normalizedMessage.includes("fetch failed")
+  ) {
+    return "No pudimos conectar con Supabase. Revisa tu conexion e intentalo de nuevo.";
+  }
+
+  if (
+    normalizedMessage.includes("invalid api key") ||
+    normalizedMessage.includes("api key")
+  ) {
+    return "La clave anon de Supabase no es valida. En el dashboard ve a Settings > API, copia de nuevo Project URL y anon public key en .env.local, y reinicia el servidor (npm run dev).";
   }
 
   return "No pudimos iniciar sesion. Revisa tus datos e intentalo de nuevo.";

@@ -78,7 +78,7 @@ export function ProductCardMarketActions({
   return (
     <div className="mt-4 space-y-2 border-t border-slate-100 pt-4">
       {message ? (
-        <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900">
+        <p className="rounded-xl bg-brand-light px-3 py-2 text-xs text-brand-dark">
           {message}
         </p>
       ) : null}

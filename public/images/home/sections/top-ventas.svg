@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" fill="none" role="img" aria-label="Top ventas">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a2332"/>
+      <stop offset="100%" stop-color="#131921"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f38b09"/>
+      <stop offset="100%" stop-color="#ffb347"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="520" fill="url(#bg)"/>
+  <circle cx="620" cy="120" r="180" fill="#f38b09" opacity="0.12"/>
+  <circle cx="140" cy="420" r="120" fill="#ffffff" opacity="0.04"/>
+  <rect x="80" y="110" width="280" height="300" rx="24" fill="#ffffff" opacity="0.08"/>
+  <rect x="110" y="140" width="220" height="160" rx="16" fill="#ffffff" opacity="0.92"/>
+  <rect x="130" y="160" width="180" height="120" rx="10" fill="#eef2f7"/>
+  <path d="M170 310h100" stroke="url(#accent)" stroke-width="8" stroke-linecap="round"/>
+  <path d="M170 335h70" stroke="#64748b" stroke-width="6" stroke-linecap="round"/>
+  <path d="M430 170l48 28 48-28v120l-48 28-48-28z" fill="url(#accent)" opacity="0.95"/>
+  <path d="M454 218l24 14v40l-24 14-24-14v-40z" fill="#fff4e6"/>
+  <circle cx="478" cy="246" r="18" fill="#131921"/>
+  <path d="M560 300h120l-30 90H590z" fill="#f38b09"/>
+  <rect x="560" y="260" width="120" height="40" rx="8" fill="#ffb347"/>
+</svg>

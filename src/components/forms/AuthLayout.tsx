@@ -18,7 +18,7 @@ export function AuthLayout({
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl flex-col">
         <div className="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[0.95fr_1.05fr]">
           <section className="max-w-xl">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-700">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-brand">
               {eyebrow}
             </p>
             <h1 className="mt-4 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">

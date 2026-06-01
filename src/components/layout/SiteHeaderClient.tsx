@@ -3,7 +3,19 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import {
+  Globe,
+  Home,
+  LayoutGrid,
+  LogIn,
+  Menu,
+  PackagePlus,
+  ShieldCheck,
+  Store,
+  User,
+  UserPlus,
+  type LucideIcon,
+} from "lucide-react";
 
 import { buttonVariants } from "@/components/ui";
 import {
@@ -16,18 +28,33 @@ import { cn } from "@/lib/utils";
 
 type SiteHeaderClientProps = Readonly<{
   isLoggedIn: boolean;
+  isSuperAdmin?: boolean;
 }>;
 
-export function SiteHeaderClient({ isLoggedIn }: SiteHeaderClientProps) {
+const headerLinkClass =
+  "inline-flex items-center gap-1.5 text-sm font-semibold text-white/95 transition hover:text-white";
+
+const NAV_ICONS: Record<string, LucideIcon> = {
+  "/": Home,
+  "/marketplace": Store,
+  "/marketplace#categorias": LayoutGrid,
+  "/paises": Globe,
+};
+
+export function SiteHeaderClient({
+  isLoggedIn,
+  isSuperAdmin = false,
+}: SiteHeaderClientProps) {
   const pathname = usePathname();
-  const isMarketplace = pathname === "/marketplace" || pathname.startsWith("/marketplace/");
+  const isMarketplace =
+    pathname === "/marketplace" || pathname.startsWith("/marketplace/");
   const showPublish = isLoggedIn && !isMarketplace;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-emerald-200/50 bg-gradient-to-r from-emerald-50/95 via-white/88 to-cyan-50/90 backdrop-blur-xl shadow-sm shadow-emerald-900/5">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-brand-dark/40 bg-brand shadow-md shadow-brand-dark/25">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <Link
-          className="flex shrink-0 items-center rounded-md outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-950/25"
+          className="flex shrink-0 items-center rounded-md bg-white/95 px-2 py-1 outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/80"
           href="/"
         >
           <img
@@ -44,15 +71,25 @@ export function SiteHeaderClient({ isLoggedIn }: SiteHeaderClientProps) {
           aria-label="Navegacion principal"
           className="hidden items-center gap-6 md:flex"
         >
-          {NAV_ITEMS.map((item) => (
-            <Link
-              className="text-sm font-medium text-slate-600 transition hover:text-slate-950"
-              href={item.href}
-              key={item.href}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+            return (
+              <HeaderNavLink
+                className={cn(
+                  headerLinkClass,
+                  isActive && "text-white underline decoration-2 underline-offset-4",
+                )}
+                href={item.href}
+                icon={NAV_ICONS[item.href]}
+                key={item.href}
+                label={item.label}
+              />
+            );
+          })}
         </nav>
 
         <Suspense
@@ -61,38 +98,49 @@ export function SiteHeaderClient({ isLoggedIn }: SiteHeaderClientProps) {
           <CountryMarketplaceSelect layout="desktop" />
         </Suspense>
 
-        <div className="hidden shrink-0 items-center gap-2 md:flex">          {isLoggedIn ? (
+        <div className="hidden shrink-0 items-center gap-3 md:flex">
+          {isLoggedIn ? (
             <>
-              <Link
-                className="text-sm font-semibold text-slate-600 transition hover:text-slate-950"
+              {isSuperAdmin ? (
+                <HeaderNavLink
+                  className={headerLinkClass}
+                  href="/admin"
+                  icon={ShieldCheck}
+                  label="Admin"
+                />
+              ) : null}
+              <HeaderNavLink
+                className={headerLinkClass}
                 href="/cuenta"
-              >
-                Cuenta
-              </Link>
+                icon={User}
+                label="Cuenta"
+              />
               {showPublish ? (
-                <Link
-                  className="text-sm font-semibold text-slate-600 transition hover:text-slate-950"
+                <HeaderNavLink
+                  className={headerLinkClass}
                   href="/publicar"
-                >
-                  Publicar
-                </Link>
+                  icon={PackagePlus}
+                  label="Publicar"
+                />
               ) : null}
             </>
           ) : null}
           {!isLoggedIn ? (
             <>
-              <Link
-                className="text-sm font-semibold text-slate-600 transition hover:text-slate-950"
+              <HeaderNavLink
+                className={headerLinkClass}
                 href="/login"
-              >
-                Iniciar sesion
-              </Link>
+                icon={LogIn}
+                label="Iniciar sesion"
+              />
               <Link
                 className={cn(
                   buttonVariants({ size: "sm", variant: "secondary" }),
+                  "border-white/50 bg-white font-semibold text-slate-900 shadow-sm hover:bg-white/90",
                 )}
                 href="/registro"
               >
+                <UserPlus aria-hidden="true" className="h-4 w-4" />
                 Crear cuenta
               </Link>
             </>
@@ -102,7 +150,7 @@ export function SiteHeaderClient({ isLoggedIn }: SiteHeaderClientProps) {
         <details className="relative md:hidden">
           <summary
             aria-label="Abrir menu de navegacion"
-            className="flex h-10 cursor-pointer list-none items-center justify-center rounded-full border border-slate-200 bg-white px-3 text-slate-800 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 [&::-webkit-details-marker]:hidden"
+            className="flex h-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/40 bg-white/15 px-3 text-white shadow-sm transition hover:bg-white/25 [&::-webkit-details-marker]:hidden"
           >
             <Menu aria-hidden="true" className="h-5 w-5" />
           </summary>
@@ -112,42 +160,34 @@ export function SiteHeaderClient({ isLoggedIn }: SiteHeaderClientProps) {
             >
               <CountryMarketplaceSelect layout="mobile" />
             </Suspense>
-            <nav aria-label="Navegacion movil" className="mt-3 flex flex-col gap-1">              {NAV_ITEMS.map((item) => (
-                <Link
-                  className="rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
+            <nav aria-label="Navegacion movil" className="mt-3 flex flex-col gap-1">
+              {NAV_ITEMS.map((item) => (
+                <MobileNavLink
                   href={item.href}
+                  icon={NAV_ICONS[item.href]}
                   key={item.href}
-                >
-                  {item.label}
-                </Link>
+                  label={item.label}
+                />
               ))}
               <div className="my-2 border-t border-slate-100" />
               {isLoggedIn ? (
                 <>
-                  <Link
-                    className="rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
-                    href="/cuenta"
-                  >
-                    Cuenta
-                  </Link>
+                  {isSuperAdmin ? (
+                    <MobileNavLink href="/admin" icon={ShieldCheck} label="Admin" />
+                  ) : null}
+                  <MobileNavLink href="/cuenta" icon={User} label="Cuenta" />
                   {showPublish ? (
-                    <Link
-                      className="rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
+                    <MobileNavLink
                       href="/publicar"
-                    >
-                      Publicar
-                    </Link>
+                      icon={PackagePlus}
+                      label="Publicar"
+                    />
                   ) : null}
                 </>
               ) : null}
               {!isLoggedIn ? (
                 <>
-                  <Link
-                    className="rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
-                    href="/login"
-                  >
-                    Iniciar sesion
-                  </Link>
+                  <MobileNavLink href="/login" icon={LogIn} label="Iniciar sesion" />
                   <Link
                     className={cn(
                       buttonVariants({
@@ -157,6 +197,7 @@ export function SiteHeaderClient({ isLoggedIn }: SiteHeaderClientProps) {
                     )}
                     href="/registro"
                   >
+                    <UserPlus aria-hidden="true" className="h-4 w-4" />
                     Crear cuenta
                   </Link>
                 </>
@@ -166,5 +207,44 @@ export function SiteHeaderClient({ isLoggedIn }: SiteHeaderClientProps) {
         </details>
       </div>
     </header>
+  );
+}
+
+function HeaderNavLink({
+  className,
+  href,
+  icon: Icon,
+  label,
+}: Readonly<{
+  className?: string;
+  href: string;
+  icon?: LucideIcon;
+  label: string;
+}>) {
+  return (
+    <Link className={className} href={href}>
+      {Icon ? <Icon aria-hidden="true" className="h-4 w-4 shrink-0" /> : null}
+      {label}
+    </Link>
+  );
+}
+
+function MobileNavLink({
+  href,
+  icon: Icon,
+  label,
+}: Readonly<{
+  href: string;
+  icon?: LucideIcon;
+  label: string;
+}>) {
+  return (
+    <Link
+      className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
+      href={href}
+    >
+      {Icon ? <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-brand" /> : null}
+      {label}
+    </Link>
   );
 }
