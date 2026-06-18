@@ -1,0 +1,3 @@
+export const ACCOUNT_FAVORITES_PAGE_SIZE = 5;
+
+export const ACCOUNT_FAVORITES_PREVIEW_COUNT = 4;

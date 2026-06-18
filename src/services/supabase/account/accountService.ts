@@ -2,6 +2,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { AccountDashboardSnapshot } from "@/features/account/types";
 import type { OrderStatus, ProductStatus, UserRole } from "@/types";
+import { mapFavoriteRows } from "@/services/supabase/account/favoriteAccountService";
+import {
+  mapBuyerOrderRows,
+  type BuyerOrderRow,
+} from "@/services/supabase/account/buyerOrdersAccountService";
+import {
+  mapSellerOrderRows,
+  type SellerOrderItemRow,
+} from "@/services/supabase/account/sellerSalesAccountService";
 
 type ProfileRow = {
   id: string;
@@ -14,48 +23,11 @@ type ProfileRow = {
   reviews_count: number;
   country: string | null;
   currency: string;
+  shipping_city: string | null;
+  shipping_address: string | null;
+  phone: string | null;
+  whatsapp: string | null;
   deleted_at: string | null;
-};
-
-type ProductEmbed = {
-  title: string;
-  slug: string;
-} | null;
-
-type OrderItemRow = {
-  id: string;
-  quantity: number;
-  unit_price: string | number;
-  total_price: string | number;
-  product_id: string;
-  products: ProductEmbed | ProductEmbed[] | null;
-};
-
-type OrderRow = {
-  id: string;
-  status: OrderStatus;
-  subtotal: string | number;
-  total: string | number;
-  currency: string;
-  created_at: string;
-  order_items: OrderItemRow[] | null;
-};
-
-type OrderEmbed = {
-  id: string;
-  status: OrderStatus;
-  total: string | number;
-  currency: string;
-  created_at: string;
-} | null;
-
-type SellerOrderItemRow = {
-  id: string;
-  order_id: string;
-  quantity: number;
-  total_price: string | number;
-  orders: OrderEmbed | OrderEmbed[] | null;
-  products: ProductEmbed | ProductEmbed[] | null;
 };
 
 type ProductStatusRow = {
@@ -103,6 +75,12 @@ function mapProfile(row: ProfileRow): AccountDashboardSnapshot["profile"] {
     reviewsCount: row.reviews_count,
     country: row.country?.trim() ? row.country.trim() : null,
     currency: row.currency?.trim() ? row.currency.trim() : "USD",
+    shippingCity: row.shipping_city?.trim() ? row.shipping_city.trim() : null,
+    shippingAddress: row.shipping_address?.trim()
+      ? row.shipping_address.trim()
+      : null,
+    phone: row.phone?.trim() ? row.phone.trim() : null,
+    whatsapp: row.whatsapp?.trim() ? row.whatsapp.trim() : null,
   };
 }
 
@@ -120,7 +98,7 @@ export async function getAccountDashboard(
     supabase
       .from("profiles")
       .select(
-        "id, full_name, username, avatar_url, bio, role, reputation_score, reviews_count, country, currency, deleted_at",
+        "id, full_name, username, avatar_url, bio, role, reputation_score, reviews_count, country, currency, shipping_city, shipping_address, phone, whatsapp, deleted_at",
       )
       .eq("id", userId)
       .maybeSingle(),
@@ -154,9 +132,29 @@ export async function getAccountDashboard(
         id,
         order_id,
         quantity,
+        unit_price,
         total_price,
-        orders ( id, status, total, currency, created_at ),
-        products ( title, slug )
+        orders (
+          id,
+          status,
+          total,
+          currency,
+          created_at,
+          buyer_id,
+          payment_reference,
+          profiles!orders_buyer_id_fkey (
+            full_name,
+            country,
+            shipping_city,
+            shipping_address,
+            phone
+          )
+        ),
+        products (
+          title,
+          slug,
+          product_images ( storage_path, sort_order, is_primary )
+        )
       `,
       )
       .eq("seller_id", userId)
@@ -195,42 +193,12 @@ export async function getAccountDashboard(
 
   const buyerOrders: AccountDashboardSnapshot["buyerOrders"] =
     !ordersResult.error && ordersResult.data
-      ? (ordersResult.data as OrderRow[]).map((row) => ({
-          id: row.id,
-          status: row.status,
-          total: toNumber(row.total),
-          currency: row.currency,
-          createdAt: row.created_at,
-          items: (row.order_items ?? []).map((item) => {
-            const product = firstRelation(item.products);
-            return {
-              id: item.id,
-              productTitle: product?.title ?? "Producto",
-              productSlug: product?.slug ?? null,
-              quantity: item.quantity,
-              totalPrice: toNumber(item.total_price),
-            };
-          }),
-        }))
+      ? mapBuyerOrderRows(ordersResult.data as BuyerOrderRow[])
       : [];
 
   const sellerLines: AccountDashboardSnapshot["sellerLines"] =
     !sellerItemsResult.error && sellerItemsResult.data
-      ? (sellerItemsResult.data as SellerOrderItemRow[]).map((row) => {
-          const order = firstRelation(row.orders);
-          const product = firstRelation(row.products);
-          return {
-            id: row.id,
-            orderId: row.order_id,
-            orderStatus: order?.status ?? "pending",
-            productTitle: product?.title ?? "Producto",
-            productSlug: product?.slug ?? null,
-            quantity: row.quantity,
-            lineTotal: toNumber(row.total_price),
-            currency: order?.currency ?? "USD",
-            orderCreatedAt: order?.created_at ?? "",
-          };
-        })
+      ? mapSellerOrderRows(sellerItemsResult.data as SellerOrderItemRow[])
       : [];
 
   const productStats: AccountDashboardSnapshot["productStats"] = {
@@ -289,22 +257,7 @@ export async function getAccountDashboard(
 
   const favoriteProducts: AccountDashboardSnapshot["favoriteProducts"] =
     !favoritesResult.error && favoritesResult.data
-      ? (favoritesResult.data as FavoriteRow[])
-          .map((row) => {
-            const product = firstRelation(row.products);
-            if (!product || product.deleted_at != null) {
-              return null;
-            }
-            return {
-              productId: product.id,
-              title: product.title,
-              slug: product.slug,
-              price: toNumber(product.price),
-              currency: product.currency,
-              favoritedAt: row.created_at,
-            };
-          })
-          .filter((item): item is NonNullable<typeof item> => item != null)
+      ? mapFavoriteRows(favoritesResult.data as FavoriteRow[])
       : [];
 
   return {

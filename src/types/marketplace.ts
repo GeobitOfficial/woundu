@@ -11,6 +11,8 @@ export type ProductStatus =
 
 export type ProductCondition = "new" | "like_new" | "used" | "refurbished";
 
+export type ProductShippingType = "free" | "paid";
+
 export type OrderStatus =
   | "pending"
   | "paid"
@@ -73,6 +75,10 @@ export type Product = Readonly<{
   compareAtPrice: number | null;
   /** `true` cuando hay oferta activa (`compareAtPrice` > `price`). */
   isOnOffer: boolean;
+  /** Unidades disponibles para compra inmediata. */
+  stock: number;
+  /** Envío gratis o pagado (negociado con el comprador). */
+  shippingType: ProductShippingType;
   /** Campos de moderación (panel admin). */
   moderationNote?: string | null;
   reviewedAt?: string | null;

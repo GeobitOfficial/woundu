@@ -12,13 +12,10 @@ import { ZodError } from "zod";
 
 
 
-import {
-
-  ProductCountrySelect,
-
+import { ProductCountrySelect,
   useProductCountryCurrency,
-
 } from "@/components/forms/ProductCountrySelect";
+import { ProductImageUpload } from "@/components/forms/ProductImageUpload";
 
 import { formatCurrencyLabel } from "@/constants/countryCurrencies";
 
@@ -31,6 +28,10 @@ import {
   updateProduct,
 
 } from "@/features/products/services/productMutations";
+import {
+  uploadProductImages,
+  type ProductImageRecord,
+} from "@/features/products/services/productImageMutations";
 
 import type { SellerProductEditRecord } from "@/features/products/services/sellerProductService";
 
@@ -72,6 +73,8 @@ type ProductFormProps = Readonly<{
 
   product?: SellerProductEditRecord;
 
+  existingImages?: ReadonlyArray<ProductImageRecord>;
+
 }>;
 
 
@@ -83,6 +86,8 @@ export function ProductForm({
   mode = "create",
 
   product,
+
+  existingImages = [],
 
   sellerLocale,
 
@@ -99,12 +104,17 @@ export function ProductForm({
 
 
   const [selectedCountry, setSelectedCountry] = useState(defaultCountry);
+  const [shippingType, setShippingType] = useState<"free" | "paid">(
+    product?.shippingType ?? "free",
+  );
 
   const [errors, setErrors] = useState<ProductFormErrors>({});
 
   const [isLoading, setIsLoading] = useState(false);
 
   const [status, setStatus] = useState<FormStatus | null>(null);
+
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
 
 
@@ -132,6 +142,8 @@ export function ProductForm({
 
       compareAtPrice: String(formData.get("compareAtPrice") ?? ""),
 
+      stock: String(formData.get("stock") ?? ""),
+
       categoryId: String(formData.get("categoryId") ?? ""),
 
       condition: String(formData.get("condition") ?? ""),
@@ -139,6 +151,8 @@ export function ProductForm({
       city: String(formData.get("city") ?? ""),
 
       country: selectedCountry || String(formData.get("country") ?? ""),
+
+      shippingType,
 
     };
 
@@ -170,7 +184,13 @@ export function ProductForm({
 
         }
 
-
+        if (selectedImages.length > 0) {
+          const uploadResult = await uploadProductImages(product.id, selectedImages);
+          if (uploadResult.error) {
+            setStatus({ type: "error", message: uploadResult.error });
+            return;
+          }
+        }
 
         setStatus({
 
@@ -192,7 +212,7 @@ export function ProductForm({
 
       const values = createProductSchema.parse(payload);
 
-      const { error } = await createProduct(values);
+      const { data, error } = await createProduct(values);
 
 
 
@@ -202,6 +222,14 @@ export function ProductForm({
 
         return;
 
+      }
+
+      if (data && selectedImages.length > 0) {
+        const uploadResult = await uploadProductImages(data.id, selectedImages);
+        if (uploadResult.error) {
+          setStatus({ type: "error", message: uploadResult.error });
+          return;
+        }
       }
 
 
@@ -518,11 +546,81 @@ export function ProductForm({
 
         />
 
+        <Input
+
+          defaultValue={product?.stock ?? 1}
+
+          error={errors.stock}
+
+          label="Stock disponible"
+
+          min="1"
+
+          name="stock"
+
+          placeholder="Cantidad en venta"
+
+          step="1"
+
+          type="number"
+
+        />
+
+        <fieldset className="space-y-3 md:col-span-2">
+          <legend className="text-sm font-semibold text-slate-800">
+            Tipo de envio
+          </legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 has-[:checked]:border-brand has-[:checked]:bg-brand-light/20">
+              <input
+                checked={shippingType === "free"}
+                className="mt-1"
+                name="shippingType"
+                onChange={() => setShippingType("free")}
+                type="radio"
+                value="free"
+              />
+              <span>
+                <span className="block text-sm font-bold text-slate-900">
+                  Envio gratis
+                </span>
+                <span className="mt-1 block text-xs text-slate-600">
+                  El precio publicado incluye el envio acordado contigo.
+                </span>
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 has-[:checked]:border-brand has-[:checked]:bg-brand-light/20">
+              <input
+                checked={shippingType === "paid"}
+                className="mt-1"
+                name="shippingType"
+                onChange={() => setShippingType("paid")}
+                type="radio"
+                value="paid"
+              />
+              <span>
+                <span className="block text-sm font-bold text-slate-900">
+                  Envio pagado
+                </span>
+                <span className="mt-1 block text-xs text-slate-600">
+                  El comprador vera que el envio se negocia aparte segun su
+                  ubicacion.
+                </span>
+              </span>
+            </label>
+          </div>
+          {errors.shippingType ? (
+            <p className="text-xs leading-5 text-red-600">{errors.shippingType}</p>
+          ) : null}
+        </fieldset>
+
         <p className="text-xs leading-5 text-slate-500 md:col-span-2">
 
           Si indicas un precio de referencia mayor al precio de venta, el producto
 
-          se mostrara como en oferta en el marketplace.
+          se mostrara como en oferta en el marketplace. El stock indica cuantas
+
+          unidades quedan disponibles para los compradores.
 
         </p>
 
@@ -585,6 +683,12 @@ export function ProductForm({
           ) : null}
 
         </label>
+
+        <ProductImageUpload
+          existingImages={existingImages}
+          onFilesChange={setSelectedImages}
+          selectedFiles={selectedImages}
+        />
 
       </div>
 

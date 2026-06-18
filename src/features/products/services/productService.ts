@@ -23,6 +23,7 @@ const PRODUCT_CARD_SELECT = `
   category_id,
   title,
   slug,
+  description,
   price,
   currency,
   condition,
@@ -36,6 +37,8 @@ const PRODUCT_CARD_SELECT = `
   reviews_count,
   compare_at_price,
   is_on_offer,
+  stock,
+  shipping_type,
   published_at,
   created_at,
   updated_at,
@@ -56,13 +59,14 @@ const PRODUCT_CARD_SELECT = `
     sort_order,
     is_primary
   ),
-  profiles (
+  profiles!products_seller_id_fkey (
     id,
     full_name,
     username,
     avatar_url,
     reputation_score,
-    reviews_count
+    reviews_count,
+    whatsapp
   )
 `;
 
@@ -500,6 +504,29 @@ export async function getMarketplaceProducts(
   return (data as unknown as ProductListRow[]).map(mapProduct);
 }
 
+export async function getMarketplaceProductBySlug(
+  slug: string,
+): Promise<ProductCardItem | null> {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_CARD_SELECT)
+    .eq("slug", slug)
+    .eq("status", "active")
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return mapProduct(data as unknown as ProductListRow);
+}
+
 async function getCategoryIdBySlug(slug: string) {
   const supabase = await createSupabaseServerClient();
   if (!supabase) return null;
@@ -554,12 +581,15 @@ function mapProduct(row: ProductListRow): ProductCardItem {
     compareAtPrice:
       row.compare_at_price == null ? null : Number(row.compare_at_price),
     isOnOffer: Boolean(row.is_on_offer),
+    stock: Number(row.stock ?? 0),
+    shippingType: row.shipping_type ?? "free",
     publishedAt: row.published_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
     category: category ? mapCategory(category) : null,
     primaryImage: sortedImages[0] ? mapProductImage(sortedImages[0]) : null,
+    images: sortedImages.map(mapProductImage),
     seller: seller
       ? ({
           id: seller.id,
@@ -568,6 +598,7 @@ function mapProduct(row: ProductListRow): ProductCardItem {
           avatarUrl: seller.avatar_url,
           reputationScore: Number(seller.reputation_score),
           reviewsCount: seller.reviews_count,
+          whatsapp: seller.whatsapp?.trim() ? seller.whatsapp.trim() : null,
         } satisfies ProductSeller)
       : null,
   };

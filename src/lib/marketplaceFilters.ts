@@ -9,6 +9,7 @@ export type MarketplaceHrefValues = Readonly<{
   maxPrice?: number;
   minStars?: number;
   onSaleOnly?: boolean;
+  page?: number;
 }>;
 
 export function toMarketplaceHref(values: MarketplaceHrefValues): string {
@@ -47,8 +48,26 @@ export function toMarketplaceHref(values: MarketplaceHrefValues): string {
     params.set("solo_ofertas", "1");
   }
 
+  if (values.page != null && Number.isInteger(values.page) && values.page > 1) {
+    params.set("pagina", String(values.page));
+  }
+
   const query = params.toString();
   return query ? `/marketplace?${query}` : "/marketplace";
+}
+
+export function parsePageQueryParam(raw: string | undefined): number {
+  if (raw == null || raw.trim() === "") {
+    return 1;
+  }
+
+  const value = Number.parseInt(raw, 10);
+
+  if (!Number.isInteger(value) || value < 1) {
+    return 1;
+  }
+
+  return value;
 }
 
 export function parsePriceQueryParam(raw: string | undefined): number | undefined {

@@ -1,3 +1,4 @@
+export { AccountBuyerDashboard } from "./AccountBuyerDashboard";
 export { AccountBuyerSection } from "./AccountBuyerSection";
 export { AccountDashboard } from "./AccountDashboard";
 export { AccountFavoritesSection } from "./AccountFavoritesSection";
@@ -9,3 +10,4 @@ export { ProfileAvatarEditor } from "./ProfileAvatarEditor";
 export { ProfileEditForm } from "./ProfileEditForm";
 export { SellerEarningsFilters } from "./SellerEarningsFilters";
 export { SellerEarningsReport } from "./SellerEarningsReport";
+export { SellerPayoutForm } from "./SellerPayoutForm";

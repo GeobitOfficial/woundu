@@ -23,15 +23,27 @@ export async function updateProfile(
     return { error: "No encontramos la moneda para ese pais." };
   }
 
+  const payload: Record<string, string | null> = {
+    full_name: values.fullName,
+    username: values.username ?? null,
+    bio: values.bio ?? null,
+    country: values.country,
+    currency,
+  };
+
+  if ("shippingCity" in values) {
+    payload.shipping_city = values.shippingCity;
+    payload.shipping_address = values.shippingAddress;
+    payload.phone = values.phone;
+  }
+
+  if ("whatsapp" in values) {
+    payload.whatsapp = values.whatsapp.replace(/\D/g, "");
+  }
+
   const { error } = await supabase
     .from("profiles")
-    .update({
-      full_name: values.fullName,
-      username: values.username ?? null,
-      bio: values.bio ?? null,
-      country: values.country,
-      currency,
-    })
+    .update(payload)
     .eq("id", userData.user.id);
 
   if (error) {

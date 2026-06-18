@@ -12,23 +12,31 @@ import {
   PackagePlus,
   ShieldCheck,
   Store,
-  User,
   UserPlus,
   type LucideIcon,
 } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
+import type { UserNotification } from "@/features/notifications/types";
+import { HeaderProfileButton } from "./HeaderProfileButton";
+import { HeaderSignOutButton } from "./HeaderSignOutButton";
+import { BRAND_HEADER_LOGO_SRC, BRAND_NAME } from "@/constants/branding";
+import { NAV_ITEMS } from "@/constants/landing";
+import { cn } from "@/lib/utils";
 import {
   CountryMarketplaceSelect,
   CountryMarketplaceSelectFallback,
 } from "./CountryMarketplaceSelect";
-import { BRAND_HEADER_LOGO_SRC, BRAND_NAME } from "@/constants/branding";
-import { NAV_ITEMS } from "@/constants/landing";
-import { cn } from "@/lib/utils";
 
 type SiteHeaderClientProps = Readonly<{
+  canPublish?: boolean;
+  displayName?: string | null;
   isLoggedIn: boolean;
   isSuperAdmin?: boolean;
+  profileAvatarUrl?: string | null;
+  initialNotifications?: ReadonlyArray<UserNotification>;
+  unreadCount?: number;
 }>;
 
 const headerLinkClass =
@@ -42,13 +50,19 @@ const NAV_ICONS: Record<string, LucideIcon> = {
 };
 
 export function SiteHeaderClient({
+  canPublish = false,
+  displayName = "Usuario",
+  initialNotifications = [],
   isLoggedIn,
   isSuperAdmin = false,
+  profileAvatarUrl = null,
+  unreadCount = 0,
 }: SiteHeaderClientProps) {
   const pathname = usePathname();
   const isMarketplace =
     pathname === "/marketplace" || pathname.startsWith("/marketplace/");
-  const showPublish = isLoggedIn && !isMarketplace;
+  const showPublish = isLoggedIn && canPublish && !isMarketplace;
+  const userName = displayName?.trim() || "Usuario";
 
   return (
     <header className="sticky top-0 z-50 border-b border-brand-dark/40 bg-brand shadow-md shadow-brand-dark/25">
@@ -101,28 +115,17 @@ export function SiteHeaderClient({
         <div className="hidden shrink-0 items-center gap-3 md:flex">
           {isLoggedIn ? (
             <>
-              {isSuperAdmin ? (
-                <HeaderNavLink
-                  className={headerLinkClass}
-                  href="/admin"
-                  icon={ShieldCheck}
-                  label="Admin"
-                />
-              ) : null}
-              <HeaderNavLink
-                className={headerLinkClass}
-                href="/cuenta"
-                icon={User}
-                label="Cuenta"
+              <NotificationBell
+                initialNotifications={initialNotifications}
+                unreadCount={unreadCount}
               />
-              {showPublish ? (
-                <HeaderNavLink
-                  className={headerLinkClass}
-                  href="/publicar"
-                  icon={PackagePlus}
-                  label="Publicar"
-                />
-              ) : null}
+              {isSuperAdmin ? <HeaderAdminButton /> : null}
+              {showPublish ? <HeaderPublishButton /> : null}
+              <HeaderProfileButton
+                avatarUrl={profileAvatarUrl}
+                displayName={userName}
+              />
+              <HeaderSignOutButton />
             </>
           ) : null}
           {!isLoggedIn ? (
@@ -172,10 +175,21 @@ export function SiteHeaderClient({
               <div className="my-2 border-t border-slate-100" />
               {isLoggedIn ? (
                 <>
+                  <div className="px-3 py-2">
+                    <NotificationBell
+                      initialNotifications={initialNotifications}
+                      tone="panel"
+                      unreadCount={unreadCount}
+                    />
+                  </div>
+                  <HeaderProfileButton
+                    avatarUrl={profileAvatarUrl}
+                    displayName={userName}
+                    tone="panel"
+                  />
                   {isSuperAdmin ? (
                     <MobileNavLink href="/admin" icon={ShieldCheck} label="Admin" />
                   ) : null}
-                  <MobileNavLink href="/cuenta" icon={User} label="Cuenta" />
                   {showPublish ? (
                     <MobileNavLink
                       href="/publicar"
@@ -183,6 +197,9 @@ export function SiteHeaderClient({
                       label="Publicar"
                     />
                   ) : null}
+                  <div className="px-3 py-2">
+                    <HeaderSignOutButton tone="panel" />
+                  </div>
                 </>
               ) : null}
               {!isLoggedIn ? (
@@ -207,6 +224,44 @@ export function SiteHeaderClient({
         </details>
       </div>
     </header>
+  );
+}
+
+function HeaderAdminButton() {
+  const pathname = usePathname();
+  const isActive = pathname === "/admin" || pathname.startsWith("/admin/");
+
+  return (
+    <Link
+      aria-current={isActive ? "page" : undefined}
+      aria-label="Panel de administración"
+      className={cn(
+        "inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80",
+        isActive && "bg-white/25 ring-2 ring-white/30",
+      )}
+      href="/admin"
+    >
+      <ShieldCheck aria-hidden className="h-5 w-5" />
+    </Link>
+  );
+}
+
+function HeaderPublishButton() {
+  const pathname = usePathname();
+  const isActive = pathname === "/publicar" || pathname.startsWith("/publicar/");
+
+  return (
+    <Link
+      aria-current={isActive ? "page" : undefined}
+      aria-label="Publicar producto"
+      className={cn(
+        "inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80",
+        isActive && "bg-white/25 ring-2 ring-white/30",
+      )}
+      href="/publicar"
+    >
+      <PackagePlus aria-hidden className="h-5 w-5" />
+    </Link>
   );
 }
 

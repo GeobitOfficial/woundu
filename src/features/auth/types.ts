@@ -8,6 +8,5 @@ export type RegisterCredentials = AuthCredentials &
     fullName: string;
     country: string;
     currency: string;
+    role: "buyer" | "seller";
   }>;
-
-export type AuthProvider = "google";

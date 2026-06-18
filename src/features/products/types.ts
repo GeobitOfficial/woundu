@@ -14,12 +14,14 @@ export type ProductSeller = Readonly<{
   avatarUrl: string | null;
   reputationScore: number;
   reviewsCount: number;
+  whatsapp: string | null;
 }>;
 
 export type ProductCardItem = Product &
   Readonly<{
     category: Category | null;
     primaryImage: ProductImage | null;
+    images: ReadonlyArray<ProductImage>;
     seller: ProductSeller | null;
   }>;
 
@@ -88,6 +90,8 @@ export type ProductListRow = Readonly<{
   reviews_count: number;
   compare_at_price: number | null;
   is_on_offer: boolean;
+  stock: number;
+  shipping_type: "free" | "paid";
   published_at: string | null;  created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -126,4 +130,5 @@ export type SellerRow = Readonly<{
   role: UserRole;
   reputation_score: number;
   reviews_count: number;
+  whatsapp: string | null;
 }>;

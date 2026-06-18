@@ -13,6 +13,8 @@ export type SellerEarningsDateRange = Readonly<{
   label: string;
 }>;
 
+export const SELLER_EARNINGS_LINES_PAGE_SIZE = 10;
+
 const PERIOD_KINDS: ReadonlySet<string> = new Set(["month", "semester", "year"]);
 
 function readParam(
@@ -151,4 +153,17 @@ export function buildSellerEarningsHref(filter: SellerEarningsFilter): string {
   }
 
   return `/cuenta/ventas?${params.toString()}`;
+}
+
+export function buildSellerEarningsPageHref(
+  filter: SellerEarningsFilter,
+  page: number,
+): string {
+  const baseHref = buildSellerEarningsHref(filter);
+
+  if (page <= 1) {
+    return baseHref;
+  }
+
+  return `${baseHref}&page=${page}`;
 }

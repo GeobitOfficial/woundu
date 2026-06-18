@@ -1,10 +1,7 @@
-import {
-  CatalogEmptyState,
-  CatalogProductSections,
-} from "@/components/marketplace";
-import type { MarketplaceCategorySection } from "@/features/products";
+import { CatalogEmptyState, MarketplaceProductGrid } from "@/components/marketplace";
 import type { ProductCardItem } from "@/features/products/types";
 import type { MarketplaceHrefValues } from "@/lib/marketplaceFilters";
+import { getBuyerPurchaseContext } from "@/services/supabase/account/buyerPurchaseContext";
 import { getAuthenticatedUser } from "@/services/supabase/auth/getAuthenticatedUser";
 import { getFavoriteProductIds } from "@/services/supabase/favorites/favoriteService";
 import { createSupabaseServerClient } from "@/services/supabase/server";
@@ -12,18 +9,26 @@ import { createSupabaseServerClient } from "@/services/supabase/server";
 type MarketplaceCatalogWithFavoritesProps = Readonly<{
   countryName?: string;
   hrefState: MarketplaceHrefValues;
+  page: number;
   products: ReadonlyArray<ProductCardItem>;
-  sections: ReadonlyArray<MarketplaceCategorySection>;
+  totalPages: number;
+  totalProducts: number;
 }>;
 
 export async function MarketplaceCatalogWithFavorites({
   countryName,
   hrefState,
+  page,
   products,
-  sections,
+  totalPages,
+  totalProducts,
 }: MarketplaceCatalogWithFavoritesProps) {
   const user = await getAuthenticatedUser();
   const supabase = await createSupabaseServerClient();
+  const buyerPurchaseContext =
+    user && supabase
+      ? await getBuyerPurchaseContext(supabase, user.id)
+      : { isBuyer: false, shippingComplete: false };
   const favoriteProductIds =
     user && supabase
       ? [
@@ -35,15 +40,19 @@ export async function MarketplaceCatalogWithFavorites({
         ]
       : [];
 
-  if (products.length === 0) {
+  if (totalProducts === 0) {
     return <CatalogEmptyState countryName={countryName} />;
   }
 
   return (
-    <CatalogProductSections
+    <MarketplaceProductGrid
+      buyerPurchaseContext={buyerPurchaseContext}
       favoriteProductIds={favoriteProductIds}
       hrefState={hrefState}
-      sections={[...sections]}
+      page={page}
+      products={products}
+      totalPages={totalPages}
+      totalProducts={totalProducts}
       viewerId={user?.id ?? null}
     />
   );

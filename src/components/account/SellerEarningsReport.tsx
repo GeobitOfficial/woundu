@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { ArrowLeft, BarChart3, Package, ShoppingCart, TrendingUp } from "lucide-react";
 
+import { SellerEarningsLinesPagination } from "@/components/account/SellerEarningsLinesPagination";
 import { formatCurrencyLabel } from "@/constants/countryCurrencies";
 import { buttonVariants } from "@/components/ui";
-import type { SellerEarningsSnapshot } from "@/features/account/types";
+import type { SellerEarningsSnapshot, SellerOrderLineView } from "@/features/account/types";
 import { formatMoney } from "@/lib/currency/formatMoney";
-import { cn } from "@/lib/utils";
-import type { OrderStatus } from "@/types";
+import type { SellerEarningsFilter } from "@/lib/account/sellerEarningsPeriod";
+import { cn } from "@/lib/utils";import type { OrderStatus } from "@/types";
 
 const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   pending: "Pendiente",
@@ -36,13 +37,29 @@ function formatDate(iso: string): string {
   }).format(new Date(iso));
 }
 
+type SellerEarningsLinesPage = Readonly<{
+  items: ReadonlyArray<SellerOrderLineView>;
+  page: number;
+  pageSize: number;
+  rangeEnd: number;
+  rangeStart: number;
+  total: number;
+  totalPages: number;
+}>;
+
 type SellerEarningsReportProps = Readonly<{
+  filter: SellerEarningsFilter;
+  linesPage: SellerEarningsLinesPage;
   snapshot: SellerEarningsSnapshot;
 }>;
 
-export function SellerEarningsReport({ snapshot }: SellerEarningsReportProps) {
-  const { totals, lines, monthlyBreakdown } = snapshot;
-  const grossEarned = totals.completedAmount + totals.inProgressAmount;
+export function SellerEarningsReport({
+  filter,
+  linesPage,
+  snapshot,
+}: SellerEarningsReportProps) {
+  const { totals, monthlyBreakdown } = snapshot;
+  const { items: lines } = linesPage;  const grossEarned = totals.completedAmount + totals.inProgressAmount;
 
   return (
     <div className="space-y-6">
@@ -197,7 +214,7 @@ export function SellerEarningsReport({ snapshot }: SellerEarningsReportProps) {
           Cada fila corresponde a un producto tuyo dentro de un pedido.
         </p>
 
-        {lines.length === 0 ? (
+        {linesPage.total === 0 ? (
           <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-10 text-center text-sm text-slate-600">
             No hay ventas registradas en este periodo. Prueba otro rango de fechas
             o publica productos en{" "}
@@ -207,37 +224,54 @@ export function SellerEarningsReport({ snapshot }: SellerEarningsReportProps) {
             .
           </div>
         ) : (
-          <ul className="mt-5 max-h-[32rem] space-y-3 overflow-y-auto pr-1">
-            {lines.map((line) => (
-              <li
-                className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 text-sm"
-                key={line.id}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-semibold text-slate-900">
-                    {line.productTitle}
-                  </span>
-                  <span
-                    className={cn(
-                      "rounded-full px-2.5 py-0.5 text-xs font-bold",
-                      ORDER_STATUS_STYLE[line.orderStatus],
-                    )}
-                  >
-                    {ORDER_STATUS_LABEL[line.orderStatus]}
-                  </span>
-                </div>
-                <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-slate-600">
-                  <span>Pedido {line.orderId.slice(0, 8)}…</span>
-                  <span>{formatDate(line.orderCreatedAt)}</span>
-                </div>
-                <p className="mt-2 font-bold text-slate-950">
-                  {formatMoney(line.lineTotal, line.currency)} · x{line.quantity}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+          <>
+            <p className="mt-5 text-sm text-slate-600">
+              Mostrando{" "}
+              <span className="font-bold text-slate-900">
+                {linesPage.rangeStart}-{linesPage.rangeEnd}
+              </span>{" "}
+              de{" "}
+              <span className="font-bold text-slate-900">{linesPage.total}</span>{" "}
+              lineas de venta
+            </p>
+
+            <ul className="mt-4 grid gap-3">
+              {lines.map((line) => (
+                <li
+                  className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 text-sm"
+                  key={line.id}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-semibold text-slate-900">
+                      {line.productTitle}
+                    </span>
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-0.5 text-xs font-bold",
+                        ORDER_STATUS_STYLE[line.orderStatus],
+                      )}
+                    >
+                      {ORDER_STATUS_LABEL[line.orderStatus]}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-slate-600">
+                    <span>Pedido {line.orderId.slice(0, 8)}…</span>
+                    <span>{formatDate(line.orderCreatedAt)}</span>
+                  </div>
+                  <p className="mt-2 font-bold text-slate-950">
+                    {formatMoney(line.lineTotal, line.currency)} · x{line.quantity}
+                  </p>
+                </li>
+              ))}
+            </ul>
+
+            <SellerEarningsLinesPagination
+              filter={filter}
+              page={linesPage.page}
+              totalPages={linesPage.totalPages}
+            />
+          </>
+        )}      </section>
     </div>
   );
 }

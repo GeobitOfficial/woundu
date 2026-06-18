@@ -1,15 +1,17 @@
 import { z } from "zod";
 
 import { LATIN_AMERICA_COUNTRIES } from "@/constants/latinAmericaCountries";
+import { isValidEmailFormat, normalizeEmail } from "@/utils/normalizeEmail";
 
 const countryValues = LATIN_AMERICA_COUNTRIES as readonly string[];
 
+const emailField = z
+  .string()
+  .transform(normalizeEmail)
+  .refine(isValidEmailFormat, { message: "Ingresa un email valido." });
+
 export const loginSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .email("Ingresa un email valido."),
+  email: emailField,
   password: z.string().min(1, "Ingresa tu contrasena."),
 });
 
@@ -20,7 +22,7 @@ export const registerSchema = z
       .trim()
       .min(2, "Ingresa tu nombre completo.")
       .max(80, "El nombre no puede superar 80 caracteres."),
-    email: z.string().trim().email("Ingresa un email valido."),
+    email: emailField,
     password: z
       .string()
       .min(8, "La contrasena debe tener al menos 8 caracteres."),
@@ -32,6 +34,9 @@ export const registerSchema = z
       .refine((value) => countryValues.includes(value), {
         message: "Selecciona un pais valido de Latinoamerica.",
       }),
+    role: z.enum(["buyer", "seller"], {
+      error: "Selecciona si usarás Woundu como comprador o vendedor.",
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Las contrasenas no coinciden.",

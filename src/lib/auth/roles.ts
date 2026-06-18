@@ -30,3 +30,15 @@ export function getRoleLabel(role: UserRole | null | undefined): string {
       return "Usuario";
   }
 }
+
+export function canAccessSellerFeatures(
+  role: UserRole | null | undefined,
+): boolean {
+  return role === "seller" || role === "admin" || role === "super_admin";
+}
+
+export function canAccessBuyerFeatures(
+  role: UserRole | null | undefined,
+): boolean {
+  return role === "buyer";
+}

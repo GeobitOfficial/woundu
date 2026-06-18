@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 
-import { ProductManagement } from "@/components/admin";
-import { getAllProductsForAdmin } from "@/features/admin/services/adminReadService";
+import { ProductAdminPanel } from "@/components/admin/ProductAdminPanel";
+import {
+  getAllProductsForAdmin,
+  getDeletedProductsForAdmin,
+} from "@/features/admin/services/adminReadService";
 
 export const metadata: Metadata = {
   title: "Moderación de productos",
 };
 
 export default async function AdminProductsPage() {
-  const products = await getAllProductsForAdmin();
+  const [products, deletedProducts] = await Promise.all([
+    getAllProductsForAdmin(),
+    getDeletedProductsForAdmin(),
+  ]);
 
   return (
     <div className="space-y-4">
@@ -17,12 +23,15 @@ export default async function AdminProductsPage() {
           Productos de la plataforma
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          Revisa todas las publicaciones, edítalas y cambia su estado entre
-          pendiente, disponible o rechazado.
+          Revisa publicaciones activas, modera estados o restaura productos
+          eliminados (soft delete).
         </p>
       </div>
 
-      <ProductManagement initialProducts={products} />
+      <ProductAdminPanel
+        initialDeletedProducts={deletedProducts}
+        initialProducts={products}
+      />
     </div>
   );
 }

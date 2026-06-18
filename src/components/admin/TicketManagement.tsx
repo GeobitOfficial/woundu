@@ -6,7 +6,8 @@ import { ZodError } from "zod";
 
 import { SupportTicketStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { SupportTicketMessageList } from "@/components/support/SupportTicketMessageList";
-import { Button } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
+import type { SupportTicketStatus } from "@/types/support";
 import {
   loadSupportTicketDetailAsAdmin,
   replyToSupportTicketAsAdmin,
@@ -44,6 +45,28 @@ export function TicketManagement({ initialTickets }: TicketManagementProps) {
   });
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | SupportTicketStatus>(
+    "all",
+  );
+
+  const filteredTickets = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return tickets.filter((ticket) => {
+      if (statusFilter !== "all" && ticket.status !== statusFilter) {
+        return false;
+      }
+
+      if (!query) {
+        return true;
+      }
+
+      return [ticket.subject, ticket.userName, ticket.userEmail, ticket.id]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+    });
+  }, [search, statusFilter, tickets]);
 
   const metrics = useMemo(
     () => ({
@@ -177,9 +200,37 @@ export function TicketManagement({ initialTickets }: TicketManagementProps) {
         <MetricCard label="Resueltos" value={String(metrics.resolved)} />
       </section>
 
+      <Input
+        label="Buscar ticket"
+        name="search"
+        onChange={(event) => setSearch(event.target.value)}
+        placeholder="Asunto, usuario o ID"
+        value={search}
+      />
+
+      <section className="flex flex-wrap gap-2">
+        <FilterChip
+          active={statusFilter === "all"}
+          label="Todos"
+          onClick={() => setStatusFilter("all")}
+        />
+        {SUPPORT_TICKET_STATUS_OPTIONS.map((option) => (
+          <FilterChip
+            active={statusFilter === option}
+            key={option}
+            label={SUPPORT_TICKET_STATUS_LABELS[option]}
+            onClick={() => setStatusFilter(option)}
+          />
+        ))}
+      </section>
+
       {tickets.length === 0 ? (
         <section className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center text-sm text-slate-600">
           Aún no hay tickets de soporte enviados por los usuarios.
+        </section>
+      ) : filteredTickets.length === 0 ? (
+        <section className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center text-sm text-slate-600">
+          No hay tickets que coincidan con los filtros.
         </section>
       ) : (
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
@@ -188,7 +239,7 @@ export function TicketManagement({ initialTickets }: TicketManagementProps) {
               <h3 className="text-sm font-bold text-slate-950">Bandeja de soporte</h3>
             </div>
             <ul className="divide-y divide-slate-100">
-              {tickets.map((ticket) => (
+              {filteredTickets.map((ticket) => (
                 <li key={ticket.id}>
                   <button
                     className={`flex w-full flex-col gap-2 px-4 py-4 text-left transition ${
@@ -310,5 +361,29 @@ function MetricCard({
       </p>
       <p className="mt-2 text-2xl font-black text-slate-950">{value}</p>
     </div>
+  );
+}
+
+function FilterChip({
+  active,
+  label,
+  onClick,
+}: Readonly<{
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}>) {
+  return (
+    <button
+      className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+        active
+          ? "bg-brand text-slate-950"
+          : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+      }`}
+      onClick={onClick}
+      type="button"
+    >
+      {label}
+    </button>
   );
 }

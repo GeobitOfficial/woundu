@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { ProductForm } from "@/components/forms";
 import { getMarketplaceCategories } from "@/features/products";
+import { getProductImagesForSeller } from "@/features/products/services/productImageMutations";
 import { getSellerProductForEdit } from "@/features/products/services/sellerProductService";
 import { getSellerLocale } from "@/services/supabase/account/getSellerLocale";
 import { createSupabaseServerClient } from "@/services/supabase/server";
@@ -33,10 +34,11 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
 
   const { id } = await params;
 
-  const [categories, sellerLocale, product] = await Promise.all([
+  const [categories, sellerLocale, product, existingImages] = await Promise.all([
     getMarketplaceCategories(),
     getSellerLocale(supabase, user.id),
     getSellerProductForEdit(supabase, user.id, id),
+    getProductImagesForSeller(supabase, id, user.id),
   ]);
 
   if (!product) {
@@ -62,6 +64,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
 
         <ProductForm
           categories={categories}
+          existingImages={existingImages}
           mode="edit"
           product={product}
           sellerLocale={sellerLocale}

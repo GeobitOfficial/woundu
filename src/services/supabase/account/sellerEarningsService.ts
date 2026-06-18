@@ -10,42 +10,11 @@ import {
   getSellerEarningsDateRange,
   type SellerEarningsFilter,
 } from "@/lib/account/sellerEarningsPeriod";
-import type { OrderStatus } from "@/types";
-
+import {
+  mapSellerOrderRows,
+  type SellerOrderItemRow,
+} from "@/services/supabase/account/sellerSalesAccountService";
 import { getSellerLocale } from "./getSellerLocale";
-
-type ProductEmbed = {
-  title: string;
-  slug: string;
-} | null;
-
-type OrderEmbed = {
-  id: string;
-  status: OrderStatus;
-  total: string | number;
-  currency: string;
-  created_at: string;
-} | null;
-
-type SellerOrderItemRow = {
-  id: string;
-  order_id: string;
-  quantity: number;
-  total_price: string | number;
-  orders: OrderEmbed | OrderEmbed[] | null;
-  products: ProductEmbed | ProductEmbed[] | null;
-};
-
-function firstRelation<T>(relation: T | T[] | null): T | null {
-  if (relation == null) {
-    return null;
-  }
-  return Array.isArray(relation) ? (relation[0] ?? null) : relation;
-}
-
-function toNumber(value: string | number): number {
-  return typeof value === "number" ? value : Number.parseFloat(value);
-}
 
 function accumulateLineTotals(
   lines: ReadonlyArray<SellerOrderLineView>,
@@ -171,9 +140,29 @@ export async function getSellerEarnings(
         id,
         order_id,
         quantity,
+        unit_price,
         total_price,
-        orders!inner ( id, status, total, currency, created_at ),
-        products ( title, slug )
+        orders!inner (
+          id,
+          status,
+          total,
+          currency,
+          created_at,
+          buyer_id,
+          payment_reference,
+          profiles!orders_buyer_id_fkey (
+            full_name,
+            country,
+            shipping_city,
+            shipping_address,
+            phone
+          )
+        ),
+        products (
+          title,
+          slug,
+          product_images ( storage_path, sort_order, is_primary )
+        )
       `,
     )
     .eq("seller_id", userId)
@@ -183,21 +172,7 @@ export async function getSellerEarnings(
 
   const lines: SellerOrderLineView[] =
     !error && data
-      ? (data as SellerOrderItemRow[]).map((row) => {
-          const order = firstRelation(row.orders);
-          const product = firstRelation(row.products);
-          return {
-            id: row.id,
-            orderId: row.order_id,
-            orderStatus: order?.status ?? "pending",
-            productTitle: product?.title ?? "Producto",
-            productSlug: product?.slug ?? null,
-            quantity: row.quantity,
-            lineTotal: toNumber(row.total_price),
-            currency: order?.currency ?? "USD",
-            orderCreatedAt: order?.created_at ?? "",
-          };
-        })
+      ? mapSellerOrderRows(data as SellerOrderItemRow[])
       : [];
 
   const sellerCurrency = sellerLocale.currency;

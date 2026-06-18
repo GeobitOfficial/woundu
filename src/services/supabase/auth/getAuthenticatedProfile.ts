@@ -8,6 +8,7 @@ import { createSupabaseServerClient } from "../server";
 export type AuthenticatedProfile = Readonly<{
   id: string;
   fullName: string;
+  avatarUrl: string | null;
   role: UserRole;
 }>;
 
@@ -41,7 +42,7 @@ export async function fetchProfileByUserId(
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, full_name, role, deleted_at")
+    .select("id, full_name, avatar_url, role, deleted_at")
     .eq("id", userId)
     .maybeSingle();
 
@@ -52,6 +53,7 @@ export async function fetchProfileByUserId(
   return {
     id: data.id,
     fullName: data.full_name,
+    avatarUrl: data.avatar_url,
     role: data.role as UserRole,
   };
 }

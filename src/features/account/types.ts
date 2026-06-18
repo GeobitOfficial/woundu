@@ -11,6 +11,10 @@ export type AccountProfileView = Readonly<{
   reviewsCount: number;
   country: string | null;
   currency: string;
+  shippingCity: string | null;
+  shippingAddress: string | null;
+  phone: string | null;
+  whatsapp: string | null;
 }>;
 
 export type BuyerOrderItemView = Readonly<{
@@ -36,10 +40,20 @@ export type SellerOrderLineView = Readonly<{
   orderStatus: OrderStatus;
   productTitle: string;
   productSlug: string | null;
+  productImagePath: string | null;
   quantity: number;
+  unitPrice: number;
   lineTotal: number;
   currency: string;
   orderCreatedAt: string;
+  orderTotal: number;
+  paymentReference: string | null;
+  buyerId: string;
+  buyerName: string;
+  buyerCountry: string | null;
+  buyerShippingCity: string | null;
+  buyerShippingAddress: string | null;
+  buyerPhone: string | null;
 }>;
 
 export type SellerProductStatsView = {

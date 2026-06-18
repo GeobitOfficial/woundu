@@ -1,18 +1,21 @@
 import Link from "next/link";
 import { ShieldCheck, Star } from "lucide-react";
 
+import { AccountBuyerDashboard } from "@/components/account/AccountBuyerDashboard";
 import { AccountBuyerSection } from "@/components/account/AccountBuyerSection";
 import { AccountFavoritesSection } from "@/components/account/AccountFavoritesSection";
 import { AccountProfileCard } from "@/components/account/AccountProfileCard";
 import { AccountQuickActions } from "@/components/account/AccountQuickActions";
 import { AccountSellerSection } from "@/components/account/AccountSellerSection";
-import { AccountSignOutButton } from "@/components/account/AccountSignOutButton";
 import { buttonVariants } from "@/components/ui";
 import { formatCurrencyLabel } from "@/constants/countryCurrencies";
+import { PendingReviewsSection } from "@/components/reviews/PendingReviewsSection";
 import type { AccountDashboardSnapshot } from "@/features/account/types";
+import type { SellerPayoutProfile } from "@/features/orders/types";
+import type { PendingProductReview } from "@/features/reviews/types";
 import { getAvatarUrl, getInitials } from "@/lib/avatars/getAvatarUrl";
-import type { SellerProductListItem } from "@/features/products/services/sellerProductService";
-import { getRoleLabel } from "@/lib/auth/roles";
+import type { SellerSalesCounts } from "@/services/supabase/account/sellerSalesAccountService";
+import { canAccessBuyerFeatures, canAccessSellerFeatures, getRoleLabel } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
 
 type AccountDashboardProps = Readonly<{
@@ -23,22 +26,42 @@ type AccountDashboardProps = Readonly<{
     rangeLabel: string;
     totals: AccountDashboardSnapshot["sellerSalesTotals"];
   }>;
-  sellerProducts: ReadonlyArray<SellerProductListItem>;
+  sellerPayout: SellerPayoutProfile | null;
+  sellerSalesCounts: SellerSalesCounts;
+  pendingReviews: ReadonlyArray<PendingProductReview>;
+  unreadNotificationCount?: number;
 }>;
 
 export function AccountDashboard({
   authFullName,
   currentMonthEarnings,
   email,
-  sellerProducts,
+  sellerPayout,
+  sellerSalesCounts,
+  pendingReviews,
   snapshot,
+  unreadNotificationCount = 0,
 }: AccountDashboardProps) {
   const { profile, buyerOrders, sellerLines, productStats, sellerSalesTotals, favoriteProducts } =
     snapshot;
   const displayName = profile?.fullName ?? authFullName ?? "Usuario";
   const roleLabel = getRoleLabel(profile?.role);
+  const showSellerFeatures = canAccessSellerFeatures(profile?.role);
+  const showBuyerFeatures = canAccessBuyerFeatures(profile?.role);
   const avatarUrl = getAvatarUrl(profile?.avatarUrl ?? null);
   const initials = getInitials(displayName);
+
+  if (!showSellerFeatures) {
+    return (
+      <AccountBuyerDashboard
+        authFullName={authFullName}
+        email={email}
+        pendingReviews={pendingReviews}
+        snapshot={snapshot}
+        unreadNotificationCount={unreadNotificationCount}
+      />
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-brand-light/35 via-white to-slate-50/80">
@@ -92,8 +115,8 @@ export function AccountDashboard({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-end">
-              {profile?.role === "super_admin" ? (
+            {profile?.role === "super_admin" ? (
+              <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-end">
                 <Link
                   className={cn(
                     buttonVariants({ size: "md", variant: "secondary" }),
@@ -104,17 +127,19 @@ export function AccountDashboard({
                   <ShieldCheck aria-hidden className="h-4 w-4" />
                   Panel Admin
                 </Link>
-              ) : null}
-              <AccountSignOutButton className="border-white/30 bg-white/10 text-white hover:bg-white/20" />
-            </div>
+              </div>
+            ) : null}
           </div>
         </section>
 
-        <div className="mt-8">
-          <AccountQuickActions />
+        <div className="mt-5">
+          <AccountQuickActions
+            showSellerActions={showSellerFeatures}
+            unreadNotificationCount={unreadNotificationCount}
+          />
         </div>
 
-        <div className="mt-8 grid gap-8 xl:grid-cols-12">
+        <div className="mt-6 grid gap-8 xl:grid-cols-12">
           <div className="xl:col-span-4">
             <div className="xl:sticky xl:top-24">
               {profile ? (
@@ -134,18 +159,25 @@ export function AccountDashboard({
           </div>
 
           <div className="space-y-8 xl:col-span-8">
+            <PendingReviewsSection pendingReviews={pendingReviews} />
+
             <AccountSellerSection
               currentMonthEarnings={currentMonthEarnings}
               productStats={productStats}
               sellerLines={sellerLines}
-              sellerProducts={sellerProducts}
+              sellerPayout={sellerPayout}
+              sellerSalesCounts={sellerSalesCounts}
               sellerSalesTotals={sellerSalesTotals}
             />
 
-            <div className="grid gap-8 lg:grid-cols-2">
-              <AccountBuyerSection buyerOrders={buyerOrders} />
+            {showBuyerFeatures ? (
+              <div className="grid gap-8 lg:grid-cols-2">
+                <AccountBuyerSection buyerOrders={buyerOrders} />
+                <AccountFavoritesSection favoriteProducts={favoriteProducts} />
+              </div>
+            ) : (
               <AccountFavoritesSection favoriteProducts={favoriteProducts} />
-            </div>
+            )}
           </div>
         </div>
       </div>

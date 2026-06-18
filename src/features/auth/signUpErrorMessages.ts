@@ -49,6 +49,10 @@ export function mapSignUpAuthErrorToUserMessage(error: AuthError): string {
     case "over_request_rate_limit":
     case "over_email_send_rate_limit":
       return "Demasiados intentos. Espera unos minutos e intentalo de nuevo.";
+    case "email_address_invalid":
+      return "No pudimos usar ese email para crear la cuenta. Prueba con otro correo.";
+    case "email_address_not_authorized":
+      return "El servidor de correo del proyecto no puede enviar confirmaciones a ese email. Contacta al administrador o usa otro correo.";
     case "hook_timeout":
     case "hook_timeout_after_retry":
     case "hook_payload_over_size_limit":
@@ -76,7 +80,11 @@ export function mapSignUpAuthErrorToUserMessage(error: AuthError): string {
   }
 
   if (lower.includes("invalid") && lower.includes("email")) {
-    return "El formato del email no es valido.";
+    return "No pudimos usar ese email para crear la cuenta. Prueba con otro correo.";
+  }
+
+  if (lower.includes("not authorized") || lower.includes("not authorized to send")) {
+    return "El servidor de correo del proyecto no puede enviar confirmaciones a ese email. Contacta al administrador o usa otro correo.";
   }
 
   if (

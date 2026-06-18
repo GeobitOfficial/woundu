@@ -18,9 +18,15 @@ export type AdminProductRecord = Readonly<{
   country: string | null;
   moderationNote: string | null;
   reviewedAt: string | null;
+  deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }>;
+
+export type AdminDeletedProductRecord = AdminProductRecord &
+  Readonly<{
+    deletedAt: string;
+  }>;
 
 export type AdminUserRecord = Readonly<{
   id: string;
@@ -28,6 +34,8 @@ export type AdminUserRecord = Readonly<{
   email: string | null;
   username: string | null;
   role: UserRole;
+  country: string | null;
+  currency: string | null;
   reputationScore: number;
   reviewsCount: number;
   isBanned: boolean;
@@ -35,6 +43,24 @@ export type AdminUserRecord = Readonly<{
   banReason: string | null;
   createdAt: string;
   updatedAt: string;
+}>;
+
+export type AdminReviewRecord = Readonly<{
+  id: string;
+  productId: string;
+  productTitle: string;
+  reviewerId: string;
+  reviewerName: string;
+  sellerId: string;
+  sellerName: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+}>;
+
+export type AdminCountryCurrencyRecord = Readonly<{
+  country: string;
+  currency: string;
 }>;
 
 export type AdminOrderLineRecord = Readonly<{
@@ -59,6 +85,9 @@ export type AdminOrderRecord = Readonly<{
   total: number;
   currency: string;
   paymentReference: string | null;
+  refundedAt: string | null;
+  refundAmount: number | null;
+  refundReason: string | null;
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;
@@ -69,12 +98,57 @@ export type AdminOrderRecord = Readonly<{
   lines: ReadonlyArray<AdminOrderLineRecord>;
 }>;
 
+export type OrderDisputeStatus =
+  | "open"
+  | "under_review"
+  | "approved_refund"
+  | "rejected"
+  | "closed";
+
+export type AdminDisputeRecord = Readonly<{
+  id: string;
+  orderId: string;
+  orderStatus: OrderStatus;
+  orderTotal: number;
+  orderCurrency: string;
+  buyerId: string;
+  buyerName: string;
+  buyerEmail: string | null;
+  openedById: string;
+  openedByName: string;
+  status: OrderDisputeStatus;
+  reason: string;
+  buyerNote: string | null;
+  adminNote: string | null;
+  refundAmount: number | null;
+  resolvedAt: string | null;
+  resolvedByName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}>;
+
+export type AdminAuditLogRecord = Readonly<{
+  id: string;
+  actorId: string;
+  actorName: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  summary: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}>;
+
+export type AdminPaymentWorkflow = "confirm_payment" | "manage_dispute" | "process_refund";
+
 export type AdminDashboardStats = Readonly<{
   totalProducts: number;
   pendingProducts: number;
   activeProducts: number;
   rejectedProducts: number;
   totalUsers: number;
+  buyerUsers: number;
+  sellerUsers: number;
   bannedUsers: number;
   totalOrders: number;
   completedOrders: number;

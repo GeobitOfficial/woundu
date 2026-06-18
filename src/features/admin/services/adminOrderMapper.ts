@@ -8,6 +8,9 @@ export const ADMIN_ORDER_SELECT = `
   total,
   currency,
   payment_reference,
+  refunded_at,
+  refund_amount,
+  refund_reason,
   created_at,
   updated_at,
   completed_at,
@@ -33,6 +36,9 @@ export type OrderAdminRow = {
   total: string | number;
   currency: string;
   payment_reference: string | null;
+  refunded_at: string | null;
+  refund_amount: string | number | null;
+  refund_reason: string | null;
   created_at: string;
   updated_at: string;
   completed_at: string | null;
@@ -108,6 +114,9 @@ export function mapAdminOrder(row: OrderAdminRow): AdminOrderRecord {
     total: Number(row.total),
     currency: row.currency,
     paymentReference: row.payment_reference,
+    refundedAt: row.refunded_at,
+    refundAmount: row.refund_amount != null ? Number(row.refund_amount) : null,
+    refundReason: row.refund_reason,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     completedAt: row.completed_at,
@@ -122,9 +131,13 @@ export function mapAdminOrder(row: OrderAdminRow): AdminOrderRecord {
 export function buildOrderStatusPatch(
   status: AdminOrderRecord["status"],
   paymentReference?: string | null,
-): Record<string, string | null> {
+  refund?: Readonly<{
+    refundAmount: number;
+    refundReason: string;
+  }>,
+): Record<string, string | number | null> {
   const now = new Date().toISOString();
-  const patch: Record<string, string | null> = {
+  const patch: Record<string, string | number | null> = {
     status,
     updated_at: now,
   };
@@ -137,8 +150,17 @@ export function buildOrderStatusPatch(
     patch.completed_at = now;
   }
 
-  if (status === "cancelled" || status === "refunded") {
+  if (status === "cancelled") {
     patch.cancelled_at = now;
+  }
+
+  if (status === "refunded") {
+    patch.cancelled_at = now;
+    patch.refunded_at = now;
+    if (refund) {
+      patch.refund_amount = refund.refundAmount;
+      patch.refund_reason = refund.refundReason.trim();
+    }
   }
 
   return patch;

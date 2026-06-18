@@ -1,27 +1,31 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
 import {
-  CatalogProductSections,
-  MarketplaceCategorySection,
+  CatalogEmptyState,
   MarketplaceCatalogWithFavorites,
+  MarketplaceCategorySection,
   MarketplaceFiltersPanel,
+  MarketplaceProductGrid,
 } from "@/components/marketplace";
 import {
   latinAmericaCountryFromSlug,
   latinAmericaCountryToSlug,
 } from "@/constants/latinAmericaCountries";
 import {
-  buildMarketplaceCategorySections,
   getMarketplaceCategories,
   getMarketplaceProducts,
 } from "@/features/products";
+import { MARKETPLACE_PAGE_SIZE } from "@/features/products/marketplaceConstants";
 import { buildProductCountByCategoryId } from "@/lib/marketplaceCategoryCounts";
 import {
   type MarketplaceHrefValues,
   parseMinStarsQueryParam,
   parseOnSaleQueryParam,
+  parsePageQueryParam,
   parsePriceQueryParam,
+  toMarketplaceHref,
 } from "@/lib/marketplaceFilters";
 
 export const revalidate = 60;
@@ -41,6 +45,7 @@ type MarketplacePageProps = Readonly<{
     max_precio?: string;
     min_estrellas?: string;
     solo_ofertas?: string;
+    pagina?: string;
   }>;
 }>;
 
@@ -64,6 +69,7 @@ export default async function MarketplacePage({
   const maxPrecio = parsePriceQueryParam(params.max_precio);
   const minEstrellas = parseMinStarsQueryParam(params.min_estrellas);
   const soloOfertas = parseOnSaleQueryParam(params.solo_ofertas);
+  const requestedPage = parsePageQueryParam(params.pagina);
 
   const hrefState: MarketplaceHrefValues = {
     categorySlug,
@@ -73,6 +79,7 @@ export default async function MarketplacePage({
     maxPrice: maxPrecio,
     minStars: minEstrellas,
     onSaleOnly: soloOfertas,
+    page: requestedPage > 1 ? requestedPage : undefined,
   };
 
   const [categories, products] = await Promise.all([
@@ -88,15 +95,36 @@ export default async function MarketplacePage({
     }),
   ]);
 
+  const totalProducts = products.length;
+  const totalPages =
+    totalProducts === 0 ? 0 : Math.ceil(totalProducts / MARKETPLACE_PAGE_SIZE);
+
+  if (totalPages > 0 && requestedPage > totalPages) {
+    redirect(
+      toMarketplaceHref({
+        categorySlug,
+        search,
+        countrySlug: countrySlugCanonical,
+        minPrice: minPrecio,
+        maxPrice: maxPrecio,
+        minStars: minEstrellas,
+        onSaleOnly: soloOfertas,
+        page: totalPages,
+      }),
+    );
+  }
+
+  const page = requestedPage;
+  const pageStart = (page - 1) * MARKETPLACE_PAGE_SIZE;
+  const paginatedProducts = products.slice(
+    pageStart,
+    pageStart + MARKETPLACE_PAGE_SIZE,
+  );
+
   const productCountByCategoryId = buildProductCountByCategoryId(products);
   const selectedCategory = categorySlug
     ? categories.find((c) => c.slug === categorySlug)
     : undefined;
-
-  const categorySections =
-    products.length > 0
-      ? buildMarketplaceCategorySections(categories, products)
-      : [];
 
   const pageTitle = selectedCategory
     ? selectedCategory.name
@@ -124,7 +152,7 @@ export default async function MarketplacePage({
               <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                 Resultados
               </p>
-              <p className="text-2xl font-bold text-slate-950">{products.length}</p>
+              <p className="text-2xl font-bold text-slate-950">{totalProducts}</p>
             </div>
             {selectedCategory ? (
               <div className="rounded-sm bg-brand-light px-3 py-2 text-sm text-brand-dark">
@@ -145,7 +173,7 @@ export default async function MarketplacePage({
             hrefState={hrefState}
             productCountByCategoryId={productCountByCategoryId}
             selectedCategorySlug={categorySlug}
-            totalProductCount={products.length}
+            totalProductCount={totalProducts}
           />
 
           <MarketplaceFiltersPanel
@@ -155,23 +183,28 @@ export default async function MarketplacePage({
 
           <Suspense
             fallback={
-              products.length > 0 ? (
-                <CatalogProductSections
+              totalProducts > 0 ? (
+                <MarketplaceProductGrid
                   favoriteProductIds={[]}
                   hrefState={hrefState}
-                  sections={categorySections}
+                  page={page}
+                  products={paginatedProducts}
+                  totalPages={totalPages}
+                  totalProducts={totalProducts}
                   viewerId={null}
                 />
               ) : (
-                <div className="h-48 animate-pulse rounded-sm bg-white" />
+                <CatalogEmptyState countryName={countryForQuery} />
               )
             }
           >
             <MarketplaceCatalogWithFavorites
               countryName={countryForQuery}
               hrefState={hrefState}
-              products={products}
-              sections={categorySections}
+              page={page}
+              products={paginatedProducts}
+              totalPages={totalPages}
+              totalProducts={totalProducts}
             />
           </Suspense>
         </div>

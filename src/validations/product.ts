@@ -40,6 +40,14 @@ export const createProductSchema = z
         "Selecciona un país de la lista.",
       ),
     compareAtPrice: optionalComparePrice,
+    stock: z.coerce
+      .number({ error: "Ingresa un stock valido." })
+      .int("El stock debe ser un numero entero.")
+      .min(1, "Debe haber al menos 1 unidad disponible.")
+      .max(99999, "El stock no puede superar 99999 unidades."),
+    shippingType: z.enum(["free", "paid"], {
+      error: "Selecciona el tipo de envio.",
+    }),
   })
   .superRefine((data, ctx) => {
     if (data.compareAtPrice != null && data.compareAtPrice <= data.price) {

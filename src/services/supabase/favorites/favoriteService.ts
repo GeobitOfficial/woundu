@@ -23,3 +23,19 @@ export async function getFavoriteProductIds(
     (data as ReadonlyArray<{ product_id: string }>).map((row) => row.product_id),
   );
 }
+
+export async function listFavoriteProductIdsForUser(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<ReadonlyArray<string>> {
+  const { data, error } = await supabase
+    .from("favorites")
+    .select("product_id")
+    .eq("user_id", userId);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return (data as ReadonlyArray<{ product_id: string }>).map((row) => row.product_id);
+}

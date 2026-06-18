@@ -28,3 +28,15 @@ export function formatAccountDate(iso: string): string {
     timeStyle: "short",
   }).format(new Date(iso));
 }
+
+export function getBuyerOrderActionLabel(status: OrderStatus): string {
+  if (status === "pending") {
+    return "Completar pago";
+  }
+
+  if (status === "completed") {
+    return "Ver detalle";
+  }
+
+  return "Seguir pedido";
+}

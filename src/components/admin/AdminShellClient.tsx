@@ -43,8 +43,24 @@ function resolveAdminNav(pathname: string): AdminNavKey {
     return "orders";
   }
 
+  if (pathname.startsWith("/admin/pagos")) {
+    return "payments";
+  }
+
   if (pathname.startsWith("/admin/soporte")) {
     return "support";
+  }
+
+  if (pathname.startsWith("/admin/resenas")) {
+    return "reviews";
+  }
+
+  if (pathname.startsWith("/admin/paises")) {
+    return "countries";
+  }
+
+  if (pathname.startsWith("/admin/auditoria")) {
+    return "audit";
   }
 
   return "overview";

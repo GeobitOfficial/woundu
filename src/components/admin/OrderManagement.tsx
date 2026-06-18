@@ -31,6 +31,33 @@ export function OrderManagement({ initialOrders }: OrderManagementProps) {
   const [values, setValues] = useState<AdminOrderStatusValues | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | OrderStatus>("all");
+
+  const filteredOrders = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return orders.filter((order) => {
+      if (statusFilter !== "all" && order.status !== statusFilter) {
+        return false;
+      }
+
+      if (!query) {
+        return true;
+      }
+
+      return [
+        order.id,
+        order.buyerName,
+        order.buyerEmail,
+        order.paymentReference,
+        ...order.lines.map((line) => line.productTitle),
+        ...order.lines.map((line) => line.sellerName),
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+    });
+  }, [orders, search, statusFilter]);
 
   const metrics = useMemo(
     () => ({
@@ -95,13 +122,41 @@ export function OrderManagement({ initialOrders }: OrderManagementProps) {
         <MetricCard label="Pendientes" value={String(metrics.pending)} />
       </section>
 
+      <Input
+        label="Buscar pedido"
+        name="search"
+        onChange={(event) => setSearch(event.target.value)}
+        placeholder="ID, comprador, producto o referencia de pago"
+        value={search}
+      />
+
+      <section className="flex flex-wrap gap-2">
+        <FilterChip
+          active={statusFilter === "all"}
+          label="Todos"
+          onClick={() => setStatusFilter("all")}
+        />
+        {ORDER_STATUS_OPTIONS.map((option) => (
+          <FilterChip
+            active={statusFilter === option}
+            key={option}
+            label={ORDER_STATUS_LABELS[option]}
+            onClick={() => setStatusFilter(option)}
+          />
+        ))}
+      </section>
+
       {orders.length === 0 ? (
         <section className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center text-sm text-slate-600">
           Aún no hay compras registradas en la plataforma.
         </section>
+      ) : filteredOrders.length === 0 ? (
+        <section className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center text-sm text-slate-600">
+          No hay pedidos que coincidan con los filtros.
+        </section>
       ) : (
         <div className="space-y-4">
-          {orders.map((order) => (
+          {filteredOrders.map((order) => (
             <OrderCard
               isSelected={order.id === selectedId}
               key={order.id}
@@ -294,5 +349,29 @@ function MetricCard({
       </p>
       <p className="mt-2 text-3xl font-black text-slate-950">{value}</p>
     </div>
+  );
+}
+
+function FilterChip({
+  active,
+  label,
+  onClick,
+}: Readonly<{
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}>) {
+  return (
+    <button
+      className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+        active
+          ? "bg-brand text-slate-950"
+          : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+      }`}
+      onClick={onClick}
+      type="button"
+    >
+      {label}
+    </button>
   );
 }

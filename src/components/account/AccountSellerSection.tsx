@@ -1,23 +1,24 @@
 import Link from "next/link";
 import { Store, TrendingUp } from "lucide-react";
 
-import { SellerProductsList } from "@/components/account/SellerProductsList";
-import type {
-  AccountDashboardSnapshot,
-  SellerOrderLineView,
-} from "@/features/account/types";
-import type { SellerProductListItem } from "@/features/products/services/sellerProductService";
+import { SellerPayoutForm } from "@/components/account/SellerPayoutForm";
+import { SellerSalesListItem } from "@/components/account/SellerSalesListItem";
+import type { AccountDashboardSnapshot } from "@/features/account/types";
+import { SELLER_SALES_PREVIEW_COUNT } from "@/features/account/sellerSalesConstants";
+import type { SellerPayoutProfile } from "@/features/orders/types";
+import type { SellerOrderLineView } from "@/features/account/types";
+import type { SellerSalesCounts } from "@/services/supabase/account/sellerSalesAccountService";
 import {
-  ORDER_STATUS_LABEL,
-  ORDER_STATUS_STYLE,
-  formatAccountDate,
-} from "@/lib/account/orderStatusUi";
+  isSellerFinalizedOrderStatus,
+  isSellerPendingOrderStatus,
+} from "@/lib/account/sellerSalesGroups";
 import { formatMoney } from "@/lib/currency/formatMoney";
 import { cn } from "@/lib/utils";
 
 type AccountSellerSectionProps = Readonly<{
   productStats: AccountDashboardSnapshot["productStats"];
-  sellerProducts: ReadonlyArray<SellerProductListItem>;
+  sellerPayout: SellerPayoutProfile | null;
+  sellerSalesCounts: SellerSalesCounts;
   sellerSalesTotals: AccountDashboardSnapshot["sellerSalesTotals"];
   sellerLines: ReadonlyArray<SellerOrderLineView>;
   currentMonthEarnings: Readonly<{
@@ -29,10 +30,20 @@ type AccountSellerSectionProps = Readonly<{
 export function AccountSellerSection({
   currentMonthEarnings,
   productStats,
-  sellerProducts,
+  sellerPayout,
   sellerLines,
+  sellerSalesCounts,
   sellerSalesTotals,
 }: AccountSellerSectionProps) {
+  const pendingSales = sellerLines.filter((line) =>
+    isSellerPendingOrderStatus(line.orderStatus),
+  );
+  const finalizedSales = sellerLines.filter((line) =>
+    isSellerFinalizedOrderStatus(line.orderStatus),
+  );
+  const pendingPreview = pendingSales.slice(0, SELLER_SALES_PREVIEW_COUNT);
+  const finalizedPreview = finalizedSales.slice(0, SELLER_SALES_PREVIEW_COUNT);
+
   return (
     <div className="space-y-6">
       <section className="rounded-[2rem] border border-brand/20 bg-white/95 p-6 shadow-lg shadow-brand/10 sm:p-8">
@@ -84,15 +95,6 @@ export function AccountSellerSection({
             </div>
           ))}
         </div>
-      </section>
-
-      <section className="rounded-[2rem] border border-slate-200/80 bg-white/95 p-6 shadow-lg shadow-slate-900/5 sm:p-8">
-        <h3 className="text-base font-black text-slate-950">Mis publicaciones</h3>
-        <p className="mt-1 text-sm text-slate-600">
-          Cada producto mantiene su pais y moneda. Editalo si cambia el mercado
-          donde lo ofreces.
-        </p>
-        <SellerProductsList products={sellerProducts} />
       </section>
 
       <section className="overflow-hidden rounded-[2rem] border border-violet-100/80 bg-gradient-to-br from-violet-50/80 via-white to-brand-light/30 p-6 shadow-lg shadow-brand/10 sm:p-8">
@@ -160,15 +162,26 @@ export function AccountSellerSection({
         </dl>
       </section>
 
-      <section className="rounded-[2rem] border border-slate-200/80 bg-white/95 p-6 shadow-lg shadow-slate-900/5 sm:p-8">
-        <h3 className="text-base font-black text-slate-950">
-          Ventas recientes
-        </h3>
-        <p className="mt-1 text-sm text-slate-600">
-          Productos tuyos incluidos en pedidos de compradores.
-        </p>
+      <SellerPayoutForm initialPayout={sellerPayout} />
 
-        {sellerLines.length === 0 ? (
+      <section className="rounded-[2rem] border border-slate-200/80 bg-white/95 p-6 shadow-lg shadow-slate-900/5 sm:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-black text-slate-950">Mis ventas</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Pedidos pendientes por confirmar y ventas ya finalizadas.
+            </p>
+          </div>
+          <Link
+            className="rounded-full border border-brand/25 bg-brand-light/40 px-4 py-2 text-sm font-bold text-brand-dark transition hover:bg-brand-light"
+            href="/cuenta/mis-ventas"
+          >
+            Ver todas
+          </Link>
+        </div>
+
+        {sellerSalesCounts.pendientes === 0 &&
+        sellerSalesCounts.finalizadas === 0 ? (
           <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-10 text-center text-sm text-slate-600">
             Sin ventas registradas.{" "}
             <Link className="font-bold text-brand underline" href="/publicar">
@@ -177,35 +190,61 @@ export function AccountSellerSection({
             .
           </div>
         ) : (
-          <ul className="mt-5 max-h-[24rem] space-y-3 overflow-y-auto pr-1">
-            {sellerLines.slice(0, 8).map((line) => (
-              <li
-                className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-sm"
-                key={line.id}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-semibold text-slate-900">
-                    {line.productTitle}
-                  </span>
-                  <span
-                    className={cn(
-                      "rounded-full px-2 py-0.5 text-xs font-bold",
-                      ORDER_STATUS_STYLE[line.orderStatus],
-                    )}
+          <div className="mt-6 space-y-8">
+            <div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className="text-sm font-black text-slate-950">
+                  Pendientes por confirmar
+                </h4>
+                {sellerSalesCounts.pendientes > 0 ? (
+                  <Link
+                    className="text-xs font-bold text-brand hover:underline"
+                    href="/cuenta/mis-ventas?tab=pendientes"
                   >
-                    {ORDER_STATUS_LABEL[line.orderStatus]}
-                  </span>
-                </div>
-                <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-slate-600">
-                  <span>Pedido {line.orderId.slice(0, 8)}…</span>
-                  <span>{formatAccountDate(line.orderCreatedAt)}</span>
-                </div>
-                <p className="mt-2 font-bold text-slate-950">
-                  {formatMoney(line.lineTotal, line.currency)} · x{line.quantity}
+                    Ver todas ({sellerSalesCounts.pendientes})
+                  </Link>
+                ) : null}
+              </div>
+
+              {pendingPreview.length === 0 ? (
+                <p className="mt-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-6 text-center text-sm text-slate-600">
+                  No tienes ventas pendientes en este momento.
                 </p>
-              </li>
-            ))}
-          </ul>
+              ) : (
+                <ul className="mt-4 grid gap-3">
+                  {pendingPreview.map((line) => (
+                    <SellerSalesListItem key={line.id} line={line} />
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="border-t border-slate-100 pt-8">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className="text-sm font-black text-slate-950">Finalizadas</h4>
+                {sellerSalesCounts.finalizadas > 0 ? (
+                  <Link
+                    className="text-xs font-bold text-brand hover:underline"
+                    href="/cuenta/mis-ventas?tab=finalizadas"
+                  >
+                    Ver todas ({sellerSalesCounts.finalizadas})
+                  </Link>
+                ) : null}
+              </div>
+
+              {finalizedPreview.length === 0 ? (
+                <p className="mt-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-6 text-center text-sm text-slate-600">
+                  Aun no tienes ventas finalizadas.
+                </p>
+              ) : (
+                <ul className="mt-4 grid gap-3">
+                  {finalizedPreview.map((line) => (
+                    <SellerSalesListItem key={line.id} line={line} showAction={false} />
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         )}
       </section>
     </div>

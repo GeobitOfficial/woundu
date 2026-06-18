@@ -20,8 +20,9 @@ export {
   getLandingPageSnapshot,
   getMarketplaceCategories,
   getMarketplaceProducts,
+  getMarketplaceProductBySlug,
 } from "./services/productService";
-export { createProduct } from "./services/productMutations";
+export { createProduct, deleteProduct } from "./services/productMutations";
 export type {
   LandingHomeCopy,
   LandingHomeFeatureBlock,

@@ -1,13 +1,16 @@
 import Link from "next/link";
 import {
+  CreditCard,
+  Globe,
   LayoutGrid,
   LifeBuoy,
+  MessageSquare,
   Package,
   Receipt,
+  ScrollText,
   ShieldCheck,
   Users,
 } from "lucide-react";
-
 import { getRoleLabel } from "@/lib/auth/roles";
 
 export type AdminNavKey =
@@ -16,8 +19,11 @@ export type AdminNavKey =
   | "products"
   | "users"
   | "orders"
-  | "support";
-
+  | "payments"
+  | "support"
+  | "reviews"
+  | "countries"
+  | "audit";
 type AdminShellProps = Readonly<{
   activeNav: AdminNavKey;
   children: React.ReactNode;
@@ -36,9 +42,17 @@ const NAV_ITEMS: ReadonlyArray<{
   { key: "products", href: "/admin/productos", icon: Package, label: "Productos" },
   { key: "users", href: "/admin/usuarios", icon: Users, label: "Usuarios" },
   { key: "orders", href: "/admin/ordenes", icon: Receipt, label: "Compras" },
+  { key: "payments", href: "/admin/pagos", icon: CreditCard, label: "Pagos" },
   { key: "support", href: "/admin/soporte", icon: LifeBuoy, label: "Soporte" },
+  { key: "reviews", href: "/admin/resenas", icon: MessageSquare, label: "Reseñas" },
+  {
+    key: "countries",
+    href: "/admin/paises",
+    icon: Globe,
+    label: "Países",
+  },
+  { key: "audit", href: "/admin/auditoria", icon: ScrollText, label: "Auditoría" },
 ];
-
 export function AdminShell({
   activeNav,
   children,

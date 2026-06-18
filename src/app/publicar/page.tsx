@@ -1,8 +1,12 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { ProductForm } from "@/components/forms";
 import { getMarketplaceCategories } from "@/features/products";
+import { getAccountDashboard } from "@/services/supabase/account/accountService";
+import { canAccessSellerFeatures } from "@/lib/auth/roles";
+import { getAuthenticatedProfile } from "@/services/supabase/auth/getAuthenticatedProfile";
 import { getSellerLocale } from "@/services/supabase/account/getSellerLocale";
 import { createSupabaseServerClient } from "@/services/supabase/server";
 
@@ -29,10 +33,21 @@ export default async function PublishProductPage() {
     redirect("/login?next=%2Fpublicar");
   }
 
-  const [categories, sellerLocale] = await Promise.all([
+  const profile = await getAuthenticatedProfile();
+
+  if (!canAccessSellerFeatures(profile?.role)) {
+    redirect("/cuenta");
+  }
+
+  const [categories, sellerLocale, accountSnapshot] = await Promise.all([
     getMarketplaceCategories(),
     getSellerLocale(supabase, user.id),
+    getAccountDashboard(supabase, user.id),
   ]);
+  const sellerWhatsappConfigured = Boolean(
+    accountSnapshot.profile?.whatsapp?.replace(/\D/g, "").length &&
+      (accountSnapshot.profile.whatsapp.replace(/\D/g, "").length ?? 0) >= 8,
+  );
 
   return (
     <main className="min-h-screen px-4 py-8">
@@ -49,6 +64,17 @@ export default async function PublishProductPage() {
             detalles que ayuden a los compradores a decidir con confianza.
           </p>
         </div>
+
+        {!sellerWhatsappConfigured ? (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950">
+            Debes registrar tu numero de WhatsApp en{" "}
+            <Link className="font-bold text-brand underline" href="/cuenta/perfil">
+              tu perfil
+            </Link>{" "}
+            antes de publicar productos. Los compradores lo usaran para coordinar
+            envio y pago.
+          </div>
+        ) : null}
 
         <ProductForm categories={categories} sellerLocale={sellerLocale} />
       </section>

@@ -64,7 +64,30 @@ export async function createProduct(
 
   }
 
+  const { data: sellerProfile, error: sellerProfileError } = await supabase
+    .from("profiles")
+    .select("whatsapp")
+    .eq("id", userData.user.id)
+    .maybeSingle();
 
+  if (sellerProfileError) {
+    return {
+      data: null,
+      error: "No pudimos validar tu perfil de vendedor.",
+    };
+  }
+
+  const whatsappDigits = String(
+    (sellerProfile as { whatsapp: string | null } | null)?.whatsapp ?? "",
+  ).replace(/\D/g, "");
+
+  if (whatsappDigits.length < 8) {
+    return {
+      data: null,
+      error:
+        "Registra tu numero de WhatsApp en tu perfil antes de publicar productos.",
+    };
+  }
 
   const slug = `${slugify(values.title)}-${crypto.randomUUID().slice(0, 8)}`;
 
@@ -105,6 +128,10 @@ export async function createProduct(
           ? values.compareAtPrice
 
           : null,
+
+      stock: values.stock,
+
+      shipping_type: values.shippingType,
 
       published_at: null,
 
@@ -218,6 +245,10 @@ export async function updateProduct(
 
           : null,
 
+      stock: values.stock,
+
+      shipping_type: values.shippingType,
+
     })
 
     .eq("id", productId)
@@ -238,7 +269,34 @@ export async function updateProduct(
 
 }
 
+export async function deleteProduct(
+  productId: string,
+): Promise<{ error: string | null }> {
+  const { data: userData, error: userError } = await getCurrentUser();
 
+  if (userError || !userData.user) {
+    return { error: "Debes iniciar sesion para eliminar el producto." };
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", productId)
+    .eq("seller_id", userData.user.id)
+    .is("deleted_at", null)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return { error: getProductMutationErrorMessage(error.message) };
+  }
+
+  if (!data) {
+    return { error: "No encontramos ese producto o ya fue eliminado." };
+  }
+
+  return { error: null };
+}
 
 function slugify(value: string) {
 
@@ -286,18 +344,18 @@ function getProductMutationErrorMessage(message?: string) {
 
 
 
-  if (normalizedMessage.includes("row-level security")) {
-
+  if (
+    normalizedMessage.includes("row-level security") ||
+    normalizedMessage.includes("infinite recursion")
+  ) {
     return "No tienes permisos para gestionar este producto.";
-
   }
 
-
-
-  if (normalizedMessage.includes("relation") || normalizedMessage.includes("schema")) {
-
+  if (
+    normalizedMessage.includes("relation") &&
+    normalizedMessage.includes("does not exist")
+  ) {
     return "La gestion de productos aun no esta disponible. Intentalo mas tarde.";
-
   }
 
 

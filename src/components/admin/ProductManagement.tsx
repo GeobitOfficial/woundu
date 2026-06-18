@@ -6,7 +6,10 @@ import { ZodError } from "zod";
 
 import { ProductStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button, Input } from "@/components/ui";
-import { updateProductAsAdmin } from "@/features/admin/services/adminMutations";
+import {
+  setProductModerationAsAdmin,
+  updateProductAsAdmin,
+} from "@/features/admin/services/adminMutations";
 import type { AdminProductRecord } from "@/features/admin/types";
 import {
   formatAdminDate,
@@ -36,6 +39,7 @@ export function ProductManagement({ initialProducts }: ProductManagementProps) {
   >({});
   const [status, setStatus] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [moderatingId, setModeratingId] = useState<string | null>(null);
 
   const filteredProducts = useMemo(() => {
     if (filter === "all") {
@@ -111,6 +115,37 @@ export function ProductManagement({ initialProducts }: ProductManagementProps) {
     }
   }
 
+  async function handleQuickModeration(
+    product: AdminProductRecord,
+    nextStatus: "active" | "rejected",
+  ) {
+    setModeratingId(product.id);
+    setStatus(null);
+
+    const result = await setProductModerationAsAdmin(product.id, {
+      status: nextStatus,
+      moderationNote:
+        nextStatus === "rejected" ? "Publicación rechazada en revisión." : "",
+    });
+
+    setModeratingId(null);
+
+    if (result.error || !result.data) {
+      setStatus(result.error ?? "No pudimos actualizar el producto.");
+      return;
+    }
+
+    setProducts((current) =>
+      current.map((item) => (item.id === result.data?.id ? result.data : item)),
+    );
+    setStatus(
+      nextStatus === "active"
+        ? `"${product.title}" aprobado y publicado.`
+        : `"${product.title}" rechazado.`,
+    );
+    router.refresh();
+  }
+
   return (
     <div className="space-y-6">
       <section className="flex flex-wrap gap-2">
@@ -131,6 +166,12 @@ export function ProductManagement({ initialProducts }: ProductManagementProps) {
           onClick={() => setFilter("rejected")}
         />
       </section>
+
+      {status ? (
+        <p className="rounded-xl bg-brand-light px-4 py-3 text-sm text-brand-dark">
+          {status}
+        </p>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -159,20 +200,47 @@ export function ProductManagement({ initialProducts }: ProductManagementProps) {
                     <p className="mt-1 text-sm text-slate-600">
                       {formatAdminMoney(product.price, product.currency)} ·{" "}
                       {product.sellerName}
+                      {product.categoryName ? ` · ${product.categoryName}` : ""}
                       {product.country ? ` · ${product.country}` : ""}
                     </p>
                     <p className="mt-1 text-xs text-slate-500">
                       Creado {formatAdminDate(product.createdAt)}
+                      {product.reviewedAt
+                        ? ` · Revisado ${formatAdminDate(product.reviewedAt)}`
+                        : ""}
                     </p>
                   </div>
-                  <Button
-                    onClick={() => startEdit(product)}
-                    size="sm"
-                    type="button"
-                    variant="secondary"
-                  >
-                    Editar
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    {product.status === "pending_review" ? (
+                      <>
+                        <Button
+                          disabled={moderatingId === product.id}
+                          onClick={() => handleQuickModeration(product, "active")}
+                          size="sm"
+                          type="button"
+                        >
+                          Aprobar
+                        </Button>
+                        <Button
+                          disabled={moderatingId === product.id}
+                          onClick={() => handleQuickModeration(product, "rejected")}
+                          size="sm"
+                          type="button"
+                          variant="secondary"
+                        >
+                          Rechazar
+                        </Button>
+                      </>
+                    ) : null}
+                    <Button
+                      onClick={() => startEdit(product)}
+                      size="sm"
+                      type="button"
+                      variant="secondary"
+                    >
+                      Editar
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -194,6 +262,11 @@ export function ProductManagement({ initialProducts }: ProductManagementProps) {
                   ? ` (${selectedProduct.sellerEmail})`
                   : ""}
               </p>
+              {selectedProduct.reviewedAt ? (
+                <p className="mt-1 text-xs text-slate-500">
+                  Revisado el {formatAdminDate(selectedProduct.reviewedAt)}
+                </p>
+              ) : null}
 
               <form className="mt-5 space-y-4" noValidate onSubmit={handleSubmit}>
                 <Input

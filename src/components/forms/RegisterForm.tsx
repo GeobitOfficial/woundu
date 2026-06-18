@@ -12,7 +12,7 @@ import { ZodError } from "zod";
 
 
 
-import { LATIN_AMERICA_COUNTRIES } from "@/constants/latinAmericaCountries";
+import { ShoppingBag, Store } from "lucide-react";
 
 import {
 
@@ -25,16 +25,12 @@ import {
 } from "@/constants/countryCurrencies";
 
 import { Button, Input, PasswordInput } from "@/components/ui";
+import { CountrySearchSelect } from "@/components/forms/CountrySearchSelect";
 
-import {
-
-  mapSignUpAuthErrorToUserMessage,
-
-  signUpWithEmail,
-
-} from "@/features/auth";
-
+import { registerUserAction } from "@/features/auth/actions/registerUserAction";
+import { signInWithEmail } from "@/features/auth";
 import { registerSchema, type RegisterFormValues } from "@/validations/auth";
+import { cn } from "@/lib/utils";
 
 
 
@@ -61,6 +57,7 @@ export function RegisterForm() {
   const [status, setStatus] = useState<FormStatus | null>(null);
 
   const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedRole, setSelectedRole] = useState<RegisterFormValues["role"]>("buyer");
 
 
 
@@ -102,6 +99,8 @@ export function RegisterForm() {
 
         country: String(formData.get("country") ?? ""),
 
+        role: selectedRole,
+
       });
 
       setErrors({});
@@ -122,62 +121,39 @@ export function RegisterForm() {
 
 
 
-      const currency = getCurrencyForCountry(values.country);
+      const { error: registerError } = await registerUserAction(values);
 
+      if (registerError) {
+        setStatus({
+          type: "error",
+          message: registerError,
+        });
+        return;
+      }
 
-
-      const { data, error } = await signUpWithEmail({
-
+      const { data, error: signInError } = await signInWithEmail({
         email: values.email,
-
-        fullName: values.fullName,
-
         password: values.password,
-
-        country: values.country,
-
-        currency,
-
       });
 
-
-
-      if (error) {
-
+      if (signInError) {
         setStatus({
-
-          type: "error",
-
-          message: mapSignUpAuthErrorToUserMessage(error),
-
+          type: "success",
+          message:
+            "Cuenta creada. Inicia sesión con tu email y contraseña.",
         });
-
         return;
-
       }
-
-
 
       if (data.session) {
-
         router.push("/cuenta");
-
         router.refresh();
-
         return;
-
       }
 
-
-
       setStatus({
-
         type: "success",
-
-        message:
-
-          "Cuenta creada. Revisa tu email para confirmar el acceso a Woundu.",
-
+        message: "Cuenta creada correctamente.",
       });
 
     } catch (error) {
@@ -231,11 +207,8 @@ export function RegisterForm() {
         </h2>
 
         <p className="mt-2 text-sm leading-6 text-slate-600">
-
-          Crea tu perfil para publicar productos y comprar con confianza. Tus
-
-          precios y ganancias usaran la moneda de tu pais.
-
+          Registro solo con email y contraseña. Elige si usarás Woundu como
+          comprador o vendedor.
         </p>
 
       </div>
@@ -276,69 +249,87 @@ export function RegisterForm() {
 
         />
 
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold text-slate-800">
+            ¿Cómo usarás Woundu?
+          </legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                {
+                  value: "buyer" as const,
+                  label: "Comprador",
+                  description: "Explorar y comprar productos del marketplace.",
+                  icon: ShoppingBag,
+                },
+                {
+                  value: "seller" as const,
+                  label: "Vendedor",
+                  description: "Publicar productos y recibir pagos directos.",
+                  icon: Store,
+                },
+              ] as const
+            ).map((option) => {
+              const Icon = option.icon;
+              const isSelected = selectedRole === option.value;
+
+              return (
+                <label
+                  className={cn(
+                    "flex cursor-pointer gap-3 rounded-2xl border p-4 transition",
+                    isSelected
+                      ? "border-brand bg-brand-light/40 ring-2 ring-brand/20"
+                      : "border-slate-200 bg-white hover:border-brand/30",
+                    errors.role && !isSelected && "border-red-200",
+                  )}
+                  key={option.value}
+                >
+                  <input
+                    checked={isSelected}
+                    className="mt-1"
+                    name="role"
+                    onChange={() => setSelectedRole(option.value)}
+                    type="radio"
+                    value={option.value}
+                  />
+                  <span>
+                    <span className="inline-flex items-center gap-2 text-sm font-bold text-slate-950">
+                      <Icon aria-hidden className="h-4 w-4 text-brand" />
+                      {option.label}
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-slate-600">
+                      {option.description}
+                    </span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          {errors.role ? (
+            <p className="text-xs leading-5 text-red-600">{errors.role}</p>
+          ) : null}
+        </fieldset>
 
 
-        <label className="space-y-2">
 
-          <span className="text-sm font-semibold text-slate-800">Pais</span>
+        <CountrySearchSelect
+          error={errors.country}
+          onCountryChange={setSelectedCountry}
+          selectedCountry={selectedCountry}
+        />
 
-          <select
-
-            aria-invalid={Boolean(errors.country)}
-
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm shadow-slate-950/5 transition focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15"
-
-            name="country"
-
-            onChange={(event) => setSelectedCountry(event.target.value)}
-
-            value={selectedCountry}
-
-          >
-
-            <option value="">Selecciona tu pais</option>
-
-            {LATIN_AMERICA_COUNTRIES.map((country) => (
-
-              <option key={country} value={country}>
-
-                {country}
-
-              </option>
-
-            ))}
-
-          </select>
-
-          {errors.country ? (
-
-            <p className="text-xs leading-5 text-red-600">{errors.country}</p>
-
-          ) : selectedCurrencyLabel ? (
-
-            <p className="text-xs leading-5 text-slate-500">
-
-              Moneda de tu cuenta:{" "}
-
-              <span className="font-semibold text-slate-700">
-
-                {selectedCurrencyLabel}
-
-              </span>
-
-            </p>
-
-          ) : (
-
-            <p className="text-xs leading-5 text-slate-500">
-
-              Define la moneda en la que publicaras y veras tus ganancias.
-
-            </p>
-
-          )}
-
-        </label>
+        {selectedCurrencyLabel ? (
+          <p className="-mt-3 text-xs leading-5 text-slate-500">
+            Moneda de tu cuenta:{" "}
+            <span className="font-semibold text-slate-700">
+              {selectedCurrencyLabel}
+            </span>
+          </p>
+        ) : (
+          <p className="-mt-3 text-xs leading-5 text-slate-500">
+            Define la moneda en la que publicaras y veras tus ganancias.
+          </p>
+        )}
 
 
 
@@ -454,7 +445,9 @@ function getRegisterErrors(error: unknown): RegisterErrors {
 
       field === "confirmPassword" ||
 
-      field === "country"
+      field === "country" ||
+
+      field === "role"
 
     ) {
 

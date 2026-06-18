@@ -3,7 +3,11 @@ import { redirect } from "next/navigation";
 
 import { SellerEarningsFilters } from "@/components/account/SellerEarningsFilters";
 import { SellerEarningsReport } from "@/components/account/SellerEarningsReport";
-import { parseSellerEarningsFilter } from "@/lib/account/sellerEarningsPeriod";
+import {
+  parseSellerEarningsFilter,
+  SELLER_EARNINGS_LINES_PAGE_SIZE,
+  buildSellerEarningsPageHref,
+} from "@/lib/account/sellerEarningsPeriod";
 import {
   getSellerEarnings,
 } from "@/services/supabase/account/sellerEarningsService";
@@ -17,6 +21,22 @@ export const metadata: Metadata = {
 type SellerEarningsPageProps = Readonly<{
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }>;
+
+function parsePageParam(value: string | string[] | undefined): number {
+  const raw = Array.isArray(value) ? value[0] : value;
+
+  if (!raw) {
+    return 1;
+  }
+
+  const parsed = Number.parseInt(raw, 10);
+
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return 1;
+  }
+
+  return parsed;
+}
 
 export default async function SellerEarningsPage({
   searchParams,
@@ -38,7 +58,29 @@ export default async function SellerEarningsPage({
 
   const resolvedSearchParams = await searchParams;
   const filter = parseSellerEarningsFilter(resolvedSearchParams);
+  const requestedPage = parsePageParam(resolvedSearchParams.page);
   const snapshot = await getSellerEarnings(supabase, user.id, filter);
+  const totalLines = snapshot.lines.length;
+  const totalPages =
+    totalLines === 0 ? 0 : Math.ceil(totalLines / SELLER_EARNINGS_LINES_PAGE_SIZE);
+
+  if (totalPages > 0 && requestedPage > totalPages) {
+    redirect(buildSellerEarningsPageHref(filter, totalPages));
+  }
+
+  const safePage = totalPages === 0 ? 1 : requestedPage;
+  const rangeStart =
+    totalLines === 0
+      ? 0
+      : (safePage - 1) * SELLER_EARNINGS_LINES_PAGE_SIZE + 1;
+  const rangeEnd = Math.min(
+    safePage * SELLER_EARNINGS_LINES_PAGE_SIZE,
+    totalLines,
+  );
+  const paginatedLines = snapshot.lines.slice(
+    (safePage - 1) * SELLER_EARNINGS_LINES_PAGE_SIZE,
+    safePage * SELLER_EARNINGS_LINES_PAGE_SIZE,
+  );
   const maxYear = new Date().getFullYear();
 
   return (
@@ -58,7 +100,19 @@ export default async function SellerEarningsPage({
         </div>
 
         <SellerEarningsFilters filter={filter} maxYear={maxYear} />
-        <SellerEarningsReport snapshot={snapshot} />
+        <SellerEarningsReport
+          filter={filter}
+          linesPage={{
+            items: paginatedLines,
+            page: safePage,
+            pageSize: SELLER_EARNINGS_LINES_PAGE_SIZE,
+            rangeEnd,
+            rangeStart,
+            total: totalLines,
+            totalPages,
+          }}
+          snapshot={snapshot}
+        />
       </div>
     </main>
   );

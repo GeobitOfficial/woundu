@@ -8,21 +8,25 @@ type ProductThumbnailProps = Readonly<{
   product: ProductCardItem;
   className?: string;
   imageClassName?: string;
+  tone?: "light" | "dark";
 }>;
 
 export function ProductThumbnail({
   className,
   imageClassName,
   product,
+  tone = "light",
 }: ProductThumbnailProps) {
   const imageUrl = getProductImageUrl(product.primaryImage?.storagePath);
   const alt = product.primaryImage?.altText ?? product.title;
+  const isDark = tone === "dark";
 
   if (imageUrl) {
     return (
       <div
         className={cn(
-          "flex items-center justify-center overflow-hidden bg-white",
+          "flex items-center justify-center overflow-hidden",
+          isDark ? "bg-[#232f3e]" : "bg-white",
           className,
         )}
       >
@@ -41,11 +45,14 @@ export function ProductThumbnail({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-100 via-slate-50 to-brand-light text-slate-400",
+        "flex flex-col items-center justify-center gap-2",
+        isDark
+          ? "bg-[#232f3e] text-slate-300"
+          : "bg-gradient-to-br from-slate-100 via-slate-50 to-brand-light text-slate-400",
         className,
       )}
     >
-      <Package aria-hidden="true" className="h-8 w-8 opacity-60" />
+      <Package aria-hidden="true" className={cn("h-8 w-8", isDark ? "opacity-70" : "opacity-60")} />
       <span className="px-2 text-center text-[11px] font-medium">
         {product.category?.name ?? "Producto"}
       </span>
