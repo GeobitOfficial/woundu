@@ -34,9 +34,11 @@ export const registerSchema = z
       .refine((value) => countryValues.includes(value), {
         message: "Selecciona un pais valido de Latinoamerica.",
       }),
-    role: z.enum(["buyer", "seller"], {
-      error: "Selecciona si usarás Woundu como comprador o vendedor.",
-    }),
+    role: z
+      .enum(["buyer"], {
+        error: "El registro público solo permite crear cuentas de comprador.",
+      })
+      .default("buyer"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Las contrasenas no coinciden.",
