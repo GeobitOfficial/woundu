@@ -24,10 +24,6 @@ export const HOME_SECTION_REFERENCE_IMAGES = {
     src: "/images/home/sections/moda.svg",
     alt: "Moda, calzado y accesorios",
   },
-  servicios: {
-    src: "/images/home/sections/servicios.svg",
-    alt: "Servicios profesionales y artículos de oficina",
-  },
   recomendados: {
     src: "/images/home/sections/recomendados.svg",
     alt: "Productos recomendados del catálogo",

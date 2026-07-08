@@ -25,10 +25,10 @@ export type SellerProductEditRecord = Readonly<{
   description: string;
   price: number;
   compareAtPrice: number | null;
+  isOnOffer: boolean;
   currency: string;
   country: string | null;
   city: string | null;
-  categoryId: string | null;
   condition: ProductCondition;
   status: ProductStatus;
   stock: number;
@@ -42,6 +42,7 @@ type ProductRow = {
   description: string;
   price: string | number;
   compare_at_price: string | number | null;
+  is_on_offer: boolean;
   currency: string;
   country: string | null;
   city: string | null;
@@ -176,7 +177,7 @@ export async function getSellerProductForEdit(
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, title, description, price, compare_at_price, currency, country, city, category_id, condition, status, stock, shipping_type",
+      "id, title, description, price, compare_at_price, is_on_offer, currency, country, city, category_id, condition, status, stock, shipping_type",
     )
     .eq("id", productId)
     .eq("seller_id", sellerId)
@@ -196,6 +197,7 @@ export async function getSellerProductForEdit(
     price: toNumber(row.price),
     compareAtPrice:
       row.compare_at_price != null ? toNumber(row.compare_at_price) : null,
+    isOnOffer: Boolean(row.is_on_offer),
     currency: row.currency,
     country: row.country,
     city: row.city,

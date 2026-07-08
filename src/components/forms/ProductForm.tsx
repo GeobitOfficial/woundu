@@ -107,6 +107,7 @@ export function ProductForm({
   const [shippingType, setShippingType] = useState<"free" | "paid">(
     product?.shippingType ?? "free",
   );
+  const [isOnOffer, setIsOnOffer] = useState<boolean>(product?.isOnOffer ?? false);
 
   const [errors, setErrors] = useState<ProductFormErrors>({});
 
@@ -139,6 +140,8 @@ export function ProductForm({
       description: String(formData.get("description") ?? ""),
 
       price: String(formData.get("price") ?? ""),
+
+      isOnOffer,
 
       compareAtPrice: String(formData.get("compareAtPrice") ?? ""),
 
@@ -524,27 +527,48 @@ export function ProductForm({
 
         />
 
-        <Input
+        <div className="space-y-2">
+          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <input
+              checked={isOnOffer}
+              className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
+              name="isOnOffer"
+              onChange={(event) => setIsOnOffer(event.target.checked)}
+              type="checkbox"
+              value="true"
+            />
+            <span className="text-sm font-semibold text-slate-900">
+              Vender en oferta
+            </span>
+          </label>
+          <p className="text-sm leading-5 text-slate-500">
+            Activa esto para mostrar el producto como oferta en el marketplace.
+          </p>
+        </div>
 
-          defaultValue={product?.compareAtPrice ?? ""}
+        {isOnOffer ? (
+          <Input
 
-          error={errors.compareAtPrice}
+            defaultValue={product?.compareAtPrice ?? ""}
 
-          key={`compare-${productCurrency}`}
+            error={errors.compareAtPrice}
 
-          label={`Precio de referencia (${productCurrency}, opcional)`}
+            key={`compare-${productCurrency}`}
 
-          min="0"
+            label={`Precio de referencia (${productCurrency})`}
 
-          name="compareAtPrice"
+            min="0"
 
-          placeholder="Solo para ofertas"
+            name="compareAtPrice"
 
-          step="0.01"
+            placeholder="Precio antes de la oferta"
 
-          type="number"
+            step="0.01"
 
-        />
+            type="number"
+
+          />
+        ) : null}
 
         <Input
 

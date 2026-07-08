@@ -85,15 +85,6 @@ const HOME_SECTION_DEFINITIONS = [
       productsForCategory(buckets.pool, categories, "moda"),
   },
   {
-    id: "servicios",
-    title: "Servicios y oficina",
-    viewAllHref: "/marketplace?categoria=servicios",
-    viewAllLabel: "Ver servicios",
-    theme: "bento-grid" as const,
-    resolve: (buckets: LandingProductBuckets, categories: ReadonlyArray<Category>) =>
-      productsForCategory(buckets.pool, categories, "servicios"),
-  },
-  {
     id: "recomendados",
     title: "Recomendados para ti",
     viewAllHref: "/marketplace",

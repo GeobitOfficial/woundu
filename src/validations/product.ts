@@ -11,6 +11,26 @@ const optionalComparePrice = z.preprocess((value) => {
   return value;
 }, z.coerce.number().positive("El precio de referencia debe ser mayor que 0.").optional());
 
+const optionalBoolean = z.preprocess((value) => {
+  if (value === "" || value === null || value === undefined) {
+    return false;
+  }
+
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    return value === "true" || value === "1" || value === "on";
+  }
+
+  if (typeof value === "number") {
+    return value === 1;
+  }
+
+  return false;
+}, z.boolean());
+
 export const createProductSchema = z
   .object({
     title: z
@@ -39,6 +59,7 @@ export const createProductSchema = z
         (value) => marketplaceCountryValues.includes(value),
         "Selecciona un país de la lista.",
       ),
+    isOnOffer: optionalBoolean,
     compareAtPrice: optionalComparePrice,
     stock: z.coerce
       .number({ error: "Ingresa un stock valido." })
@@ -50,7 +71,15 @@ export const createProductSchema = z
     }),
   })
   .superRefine((data, ctx) => {
-    if (data.compareAtPrice != null && data.compareAtPrice <= data.price) {
+    if (data.isOnOffer && data.compareAtPrice == null) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Debes ingresar un precio de referencia para activar la oferta.",
+        path: ["compareAtPrice"],
+      });
+    }
+
+    if (data.isOnOffer && data.compareAtPrice != null && data.compareAtPrice <= data.price) {
       ctx.addIssue({
         code: "custom",
         message:

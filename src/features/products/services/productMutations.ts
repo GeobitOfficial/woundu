@@ -129,6 +129,8 @@ export async function createProduct(
 
           : null,
 
+      is_on_offer: Boolean(values.isOnOffer),
+
       stock: values.stock,
 
       shipping_type: values.shippingType,
@@ -244,6 +246,8 @@ export async function updateProduct(
           ? values.compareAtPrice
 
           : null,
+
+      is_on_offer: Boolean(values.isOnOffer),
 
       stock: values.stock,
 
