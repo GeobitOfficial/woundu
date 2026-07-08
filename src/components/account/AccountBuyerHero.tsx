@@ -34,16 +34,20 @@ export function AccountBuyerHero({
   )[0];
 
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white px-5 py-5 shadow-sm sm:px-6 sm:py-6">
+    <section className="relative overflow-hidden rounded-3xl border border-brand/20 bg-gradient-to-br from-brand/8 via-white to-slate-50 px-5 py-6 shadow-sm sm:px-8 sm:py-8">
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-brand/8 blur-2xl"
+        className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-brand/12 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-brand-light/20 blur-3xl"
       />
 
       <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="relative shrink-0">
-            <div className="h-16 w-16 overflow-hidden rounded-full border-2 border-white bg-white shadow-md ring-2 ring-brand/10 sm:h-[4.5rem] sm:w-[4.5rem]">
+            <div className="h-20 w-20 overflow-hidden rounded-full border-3 border-white bg-white shadow-lg ring-4 ring-brand/15 sm:h-24 sm:w-24">
               {avatarUrl ? (
                 <img
                   alt={`Foto de perfil de ${displayName}`}
@@ -56,27 +60,27 @@ export function AccountBuyerHero({
                 </div>
               )}
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-brand text-white shadow-sm">
-              <ShoppingBag aria-hidden className="h-3.5 w-3.5" />
+            <span className="absolute -bottom-1 -right-1 inline-flex h-8 w-8 items-center justify-center rounded-full border-3 border-white bg-brand text-white shadow-md">
+              <ShoppingBag aria-hidden className="h-4 w-4" />
             </span>
           </div>
 
           <div className="min-w-0">
-            <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-dark">
-              <Sparkles aria-hidden className="h-3 w-3" />
-              Tu cuenta
+            <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand">
+              <Sparkles aria-hidden className="h-4 w-4" />
+              Tu cuenta Woundu
             </p>
-            <h1 className="mt-1 truncate text-2xl font-black tracking-tight text-slate-950 sm:text-[1.75rem]">
-              Hola, {firstName}
+            <h1 className="mt-2 truncate text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+              ¡Hola, {firstName}!
             </h1>
-            <p className="truncate text-sm text-slate-500">{email}</p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              <span className="inline-flex items-center rounded-full bg-brand-light px-2.5 py-0.5 text-[11px] font-bold text-brand-dark">
+            <p className="mt-1 truncate text-sm text-slate-600">{email}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="inline-flex items-center rounded-full bg-brand/10 px-3.5 py-1.5 text-xs font-bold text-brand-dark ring-1 ring-brand/20">
                 {roleLabel}
               </span>
               {profile?.country ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
-                  <Globe2 aria-hidden className="h-3 w-3" />
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3.5 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                  <Globe2 aria-hidden className="h-3.5 w-3.5" />
                   {profile.country}
                 </span>
               ) : null}
@@ -84,28 +88,28 @@ export function AccountBuyerHero({
           </div>
         </div>
 
-        <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row">
+        <div className="flex w-full shrink-0 flex-col gap-2.5 sm:w-auto sm:flex-row">
           <Link
             className={cn(
               buttonVariants({ size: "md", variant: "secondary" }),
-              "group w-full justify-center sm:w-auto",
+              "group w-full justify-center gap-2 sm:w-auto",
             )}
             href="/cuenta/perfil"
           >
             <PencilLine aria-hidden className="h-4 w-4" />
-            Editar perfil
+            <span>Editar perfil</span>
           </Link>
           <Link
             className={cn(
               buttonVariants({ size: "md" }),
-              "group w-full justify-center sm:w-auto",
+              "group w-full justify-center gap-2 sm:w-auto",
             )}
             href="/marketplace"
           >
-            Explorar marketplace
+            <span>Explorar marketplace</span>
             <ArrowRight
               aria-hidden
-              className="h-4 w-4 transition group-hover:translate-x-0.5"
+              className="h-4 w-4 transition group-hover:translate-x-1"
             />
           </Link>
         </div>

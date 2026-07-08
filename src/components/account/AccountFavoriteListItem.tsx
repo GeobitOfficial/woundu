@@ -52,11 +52,11 @@ export function AccountFavoriteListItem({
     <li>
       <Link
         className={cn(
-          "group flex items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 transition hover:border-rose-200 hover:bg-rose-50/50",
+          "group flex items-center gap-3 rounded-xl border border-rose-100/50 bg-white/70 backdrop-blur-sm p-3.5 transition hover:border-rose-300/60 hover:bg-rose-50/40 hover:shadow-sm",
         )}
         href={href}
       >
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-500">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-rose-100 to-rose-50 text-rose-500 shadow-sm">
           <Heart aria-hidden className="h-4 w-4 fill-current" />
         </div>
         <div className="min-w-0 flex-1">
@@ -67,7 +67,7 @@ export function AccountFavoriteListItem({
         </div>
         <ArrowUpRight
           aria-hidden
-          className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-brand"
+          className="h-4 w-4 shrink-0 text-slate-300 group-hover:text-rose-500"
         />
       </Link>
     </li>

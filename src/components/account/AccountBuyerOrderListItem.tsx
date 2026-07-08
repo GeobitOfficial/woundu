@@ -85,7 +85,7 @@ export function AccountBuyerOrderListItem({
     <li>
       <article
         className={cn(
-          "rounded-xl border border-slate-200/80 border-l-[3px] bg-slate-50/50 p-4 transition hover:bg-white hover:shadow-sm",
+          "group rounded-xl border border-slate-200/60 border-l-4 bg-white/70 backdrop-blur-sm p-4 transition hover:bg-white hover:shadow-md hover:border-slate-200",
           STATUS_ACCENT[order.status],
         )}
       >

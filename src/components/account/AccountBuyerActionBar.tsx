@@ -49,44 +49,46 @@ export function AccountBuyerActionBar({
       icon: Package,
       label: "Pedidos",
       value: ordersCount,
-      tone: "text-brand-dark bg-brand-light/70 ring-brand/10",
+      tone: "text-brand-dark bg-gradient-to-br from-brand/12 to-brand-light/20 ring-brand/30",
     },
     {
       icon: Heart,
       label: "Favoritos",
       value: favoritesCount,
-      tone: "text-rose-700 bg-rose-50 ring-rose-100",
+      tone: "text-rose-700 bg-gradient-to-br from-rose-50 to-rose-100/40 ring-rose-200/60",
     },
     {
       icon: Star,
       label: "Reseñas",
       value: pendingReviewsCount,
-      tone: "text-amber-800 bg-amber-50 ring-amber-100",
+      tone: "text-amber-800 bg-gradient-to-br from-amber-50 to-amber-100/40 ring-amber-200/60",
     },
   ];
 
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap gap-2">
+    <section className="rounded-3xl border border-slate-200/60 bg-white/80 backdrop-blur-sm p-5 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="grid grid-cols-3 gap-2 w-full lg:w-auto lg:flex lg:flex-wrap">
           {stats.map((stat) => {
             const Icon = stat.icon;
 
             return (
               <div
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-xl px-3 py-2 ring-1",
+                  "inline-flex items-center gap-3 rounded-2xl px-4 py-3 ring-1 transition hover:shadow-md",
                   stat.tone,
                 )}
                 key={stat.label}
               >
-                <Icon aria-hidden className="h-4 w-4 shrink-0 opacity-80" />
-                <span className="text-lg font-black tabular-nums leading-none">
-                  {stat.value}
-                </span>
-                <span className="text-xs font-semibold opacity-80">
-                  {stat.label}
-                </span>
+                <Icon aria-hidden className="h-5 w-5 shrink-0 opacity-90" />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-2xl font-black tabular-nums leading-none">
+                    {stat.value}
+                  </span>
+                  <span className="text-xs font-semibold opacity-75">
+                    {stat.label}
+                  </span>
+                </div>
               </div>
             );
           })}
@@ -94,7 +96,7 @@ export function AccountBuyerActionBar({
 
         <nav
           aria-label="Accesos rápidos"
-          className="flex flex-wrap gap-2 border-t border-slate-100 pt-4 lg:border-t-0 lg:pt-0"
+          className="flex flex-wrap gap-2.5 border-t border-slate-100/80 pt-5 lg:border-t-0 lg:pt-0"
         >
           {NAV_CHIPS.map((item) => {
             const Icon = item.icon;
@@ -109,10 +111,10 @@ export function AccountBuyerActionBar({
                     : item.label
                 }
                 className={cn(
-                  "relative inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-bold transition hover:-translate-y-px",
+                  "relative inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition hover:-translate-y-0.5",
                   item.featured
-                    ? "bg-brand text-white shadow-sm shadow-brand/20 hover:bg-brand-hover"
-                    : "bg-slate-50 text-slate-700 ring-1 ring-slate-200/80 hover:bg-brand-light/40 hover:text-brand-dark",
+                    ? "bg-gradient-to-r from-brand to-brand-hover text-white shadow-md shadow-brand/30 hover:shadow-lg"
+                    : "bg-slate-100/60 text-slate-700 ring-1 ring-slate-200/80 hover:bg-brand-light/50 hover:text-brand-dark hover:ring-brand/30",
                 )}
                 href={item.href}
                 key={item.href}

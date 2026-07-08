@@ -25,8 +25,8 @@ export function AccountBuyerDashboard({
   const displayName = profile?.fullName ?? authFullName ?? "Usuario";
 
   return (
-    <main className="min-h-screen pb-10">
-      <div className="mx-auto max-w-5xl space-y-5 px-4 py-6 sm:px-6 lg:py-8">
+    <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/40 to-slate-50 pb-12">
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:py-12">
         <AccountBuyerHero
           authFullName={authFullName}
           displayName={displayName}
@@ -43,7 +43,7 @@ export function AccountBuyerDashboard({
 
         <PendingReviewsSection pendingReviews={pendingReviews} />
 
-        <div className="grid gap-5 lg:grid-cols-2 lg:items-stretch">
+        <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
           <AccountBuyerOrders buyerOrders={buyerOrders} />
           <AccountBuyerFavorites favoriteProducts={favoriteProducts} />
         </div>
