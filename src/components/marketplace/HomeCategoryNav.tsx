@@ -80,19 +80,9 @@ function CategoryNavItem({
       className="group flex flex-col items-center gap-3 text-center"
       href={href}
     >
-      {previewProduct ? (
-        <ProductThumbnail
-          className="aspect-square w-full max-w-[7.5rem] rounded-full p-2 ring-2 ring-transparent transition group-hover:ring-brand/40 group-hover:shadow-lg"
-          product={previewProduct}
-        />
-      ) : (
-        <div className="flex aspect-square w-full max-w-[7.5rem] items-center justify-center rounded-full bg-gradient-to-br from-slate-100 via-white to-brand-light shadow-sm ring-1 ring-slate-200/80 transition group-hover:-translate-y-1 group-hover:shadow-lg group-hover:ring-brand/30">
-          <Icon
-            aria-hidden="true"
-            className="h-9 w-9 text-brand-dark"
-          />
-        </div>
-      )}
+      <div className="flex aspect-square w-full max-w-[7.5rem] items-center justify-center rounded-full bg-gradient-to-br from-slate-100 via-white to-brand-light shadow-sm ring-1 ring-slate-200/80 transition group-hover:-translate-y-1 group-hover:shadow-lg group-hover:ring-brand/30">
+        <Icon aria-hidden="true" className="h-9 w-9 text-brand-dark" />
+      </div>
       <span className="max-w-[8rem] text-sm font-semibold leading-4 text-slate-800 transition group-hover:text-brand">
         {category.name}
       </span>
