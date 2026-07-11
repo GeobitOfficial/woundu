@@ -10,6 +10,7 @@ import { setProductFavorite } from "@/features/favorites/services/favoriteMutati
 import { createPendingOrderForProduct } from "@/features/orders/services/orderMutations";
 import { buildWhatsAppPurchaseLink } from "@/lib/whatsapp/buildWhatsAppPurchaseLink";
 import { cn } from "@/lib/utils";
+import { getSupabaseClient } from "@/services/supabase/client";
 
 import type { SellerPayoutProfile } from "@/features/orders/types";
 import type { ProductShippingType } from "@/types/marketplace";
@@ -33,6 +34,7 @@ type ProductCardMarketActionsProps = Readonly<{
   loginNextHref?: string;
   buyerShippingComplete?: boolean;
   isBuyer?: boolean;
+  sellerIsAdmin?: boolean;
 }>;
 
 export function ProductCardMarketActions({
@@ -52,6 +54,7 @@ export function ProductCardMarketActions({
   stock,
   title,
   viewerId,
+  sellerIsAdmin = false,
 }: ProductCardMarketActionsProps) {
   const router = useRouter();
   const [favorited, setFavorited] = useState(initialFavorited);
@@ -124,6 +127,87 @@ export function ProductCardMarketActions({
     if (data) {
       router.push(`/cuenta/pedidos/${data.orderId}`);
       router.refresh();
+    }
+  }
+
+  async function handleWompiPayClick() {
+    setMessage(null);
+    if (!viewerId) return;
+    setPurchaseBusy(true);
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+      if (!supabaseUrl) {
+        setMessage("Configuración de Supabase no disponible");
+        setPurchaseBusy(false);
+        return;
+      }
+
+      // Obtener el JWT del usuario autenticado
+      const supabase = getSupabaseClient();
+      const { data, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !data.session?.access_token) {
+        setMessage("Error de autenticación, intenta de nuevo");
+        setPurchaseBusy(false);
+        return;
+      }
+
+      const jwt = data.session.access_token;
+
+      const resp = await fetch(
+        `${supabaseUrl}/functions/v1/wompi-checkout`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ productId }),
+        }
+      );
+
+      const result = await resp.json();
+      setPurchaseBusy(false);
+      if (!resp.ok) {
+        setMessage(result.error || "No fue posible iniciar el pago");
+        return;
+      }
+
+      // La Edge Function retorna los datos de checkout firmados.
+      if (result.reference) {
+        // Redirigir al Web Checkout de Wompi (más estable que embeber widget en dev local).
+        const params = new URLSearchParams({
+          "public-key": result.public_key,
+          currency: result.currency,
+          "amount-in-cents": String(result.amount_in_cents),
+          reference: result.reference,
+          "signature:integrity": result.signature,
+        });
+
+        // Wompi CloudFront blocks local/non-HTTPS redirect URLs (ex: http://localhost...)
+        if (result.redirect_url) {
+          const isHttpsRedirect =
+            typeof result.redirect_url === "string" &&
+            result.redirect_url.startsWith("https://");
+          if (isHttpsRedirect) {
+            params.set("redirect-url", result.redirect_url);
+          }
+        }
+        if (result.customer_email) {
+          params.set("customer-data:email", result.customer_email);
+        }
+
+        window.location.href = `https://checkout.wompi.co/p/?${params.toString()}`;
+        return;
+      }
+
+      setMessage("Respuesta inesperada del servidor");
+      console.log("Wompi checkout response:", result);
+    } catch (err) {
+      setPurchaseBusy(false);
+      setMessage("Error iniciando pago");
+      console.error(err);
     }
   }
 
@@ -217,7 +301,29 @@ export function ProductCardMarketActions({
       ) : null}
 
       <div className="flex flex-wrap items-center gap-1.5">
-        {renderBuyAction()}
+          {renderBuyAction()}
+
+          {sellerIsAdmin && !isOwnListing ? (
+            <Button
+              className={compact ? "h-8 px-2.5 text-xs" : undefined}
+              disabled={purchaseBusy}
+              onClick={handleWompiPayClick}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              {purchaseBusy ? (
+                <>
+                  <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
+                  ...
+                </>
+              ) : compact ? (
+                <>Pagar</>
+              ) : (
+                <>Pagar con tarjeta</>
+              )}
+            </Button>
+          ) : null}
 
         {viewerId ? (
           <button

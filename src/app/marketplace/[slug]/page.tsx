@@ -75,6 +75,14 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       : Promise.resolve({ isBuyer: false, shippingComplete: false }),
   ]);
 
+  // fetch seller role to determine if product belongs to an admin (payments allowed)
+  const { data: sellerProfileRow } = await (supabase
+    ? supabase.from("profiles").select("id, role").eq("id", product.sellerId).maybeSingle()
+    : Promise.resolve({ data: null }));
+
+  const sellerRole = (sellerProfileRow as any)?.role;
+  const sellerIsAdmin = sellerRole === "admin" || sellerRole === "super_admin";
+
   const location = [product.city, product.country].filter(Boolean).join(", ");
   const priceLabel = formatProductPrice(product.price, product.currency);
   const discount = getProductDiscountPercent(product);
@@ -210,6 +218,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 sellerId={product.sellerId}
                 sellerPayout={sellerPayout}
                 sellerWhatsapp={product.seller?.whatsapp ?? null}
+                sellerIsAdmin={sellerIsAdmin}
                 shippingType={product.shippingType}
                 stock={product.stock}
                 title={product.title}
