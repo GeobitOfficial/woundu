@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -120,6 +121,15 @@ export default function WompiCheckoutPage() {
               Cargando formulario de pago...
             </p>
           )}
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <Link
+            href="/marketplace"
+            className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Volver al marketplace
+          </Link>
         </div>
       </div>
     </div>

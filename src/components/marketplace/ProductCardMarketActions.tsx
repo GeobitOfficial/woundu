@@ -198,7 +198,14 @@ export function ProductCardMarketActions({
           params.set("customer-data:email", result.customer_email);
         }
 
-        window.location.href = `https://checkout.wompi.co/p/?${params.toString()}`;
+        const checkoutUrl = `https://checkout.wompi.co/p/?${params.toString()}`;
+        const popup = window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+
+        if (!popup) {
+          setMessage("Permite ventanas emergentes para abrir el checkout sin salir del marketplace.");
+          setPurchaseBusy(false);
+          return;
+        }
         return;
       }
 
@@ -256,6 +263,30 @@ export function ProductCardMarketActions({
       );
     }
 
+    if (sellerIsAdmin) {
+      return (
+        <Button
+          className={compact ? "h-8 px-2.5 text-xs" : undefined}
+          disabled={purchaseBusy}
+          onClick={handleWompiPayClick}
+          size="sm"
+          type="button"
+          variant="primary"
+        >
+          {purchaseBusy ? (
+            <>
+              <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
+              ...
+            </>
+          ) : compact ? (
+            <>Comprar</>
+          ) : (
+            <>Comprar {priceLabel}</>
+          )}
+        </Button>
+      );
+    }
+
     return (
       <Button
         className={compact ? "h-8 px-2.5 text-xs" : undefined}
@@ -301,29 +332,7 @@ export function ProductCardMarketActions({
       ) : null}
 
       <div className="flex flex-wrap items-center gap-1.5">
-          {renderBuyAction()}
-
-          {sellerIsAdmin && !isOwnListing ? (
-            <Button
-              className={compact ? "h-8 px-2.5 text-xs" : undefined}
-              disabled={purchaseBusy}
-              onClick={handleWompiPayClick}
-              size="sm"
-              type="button"
-              variant="secondary"
-            >
-              {purchaseBusy ? (
-                <>
-                  <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
-                  ...
-                </>
-              ) : compact ? (
-                <>Pagar</>
-              ) : (
-                <>Pagar con tarjeta</>
-              )}
-            </Button>
-          ) : null}
+        {renderBuyAction()}
 
         {viewerId ? (
           <button

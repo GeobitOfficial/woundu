@@ -12,6 +12,7 @@ export type ProductSeller = Readonly<{
   fullName: string;
   username: string | null;
   avatarUrl: string | null;
+  role: UserRole;
   reputationScore: number;
   reviewsCount: number;
   whatsapp: string | null;

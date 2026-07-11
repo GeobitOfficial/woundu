@@ -125,6 +125,9 @@ export function ProductCard({
           productSlug={product.slug}
           sellerId={product.sellerId}
           sellerWhatsapp={product.seller?.whatsapp ?? null}
+          sellerIsAdmin={
+            product.seller?.role === "admin" || product.seller?.role === "super_admin"
+          }
           shippingType={product.shippingType}
           stock={product.stock}
           title={product.title}

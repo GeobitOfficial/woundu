@@ -64,6 +64,7 @@ const PRODUCT_CARD_SELECT = `
     full_name,
     username,
     avatar_url,
+    role,
     reputation_score,
     reviews_count,
     whatsapp
