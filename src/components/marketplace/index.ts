@@ -28,6 +28,7 @@ export { MarketplaceCatalogWithFavorites } from "./MarketplaceCatalogWithFavorit
 export { MarketplaceCategorySection } from "./MarketplaceCategorySection";
 export { MarketplaceFiltersPanel } from "./MarketplaceFiltersPanel";
 export { MarketplaceProductGrid } from "./MarketplaceProductGrid";
+export { MarketplaceResultsSection } from "./MarketplaceResultsSection";
 export { ProductCard } from "./ProductCard";
 export { ProductThumbnail } from "./ProductThumbnail";
 export { SectionReferenceImage } from "./SectionReferenceImage";

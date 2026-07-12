@@ -36,6 +36,8 @@ export type MarketplaceProductFilters = Readonly<{
   /** Mínimo de estrellas (1–5): solo productos con al menos una reseña y promedio >= valor. */
   minStars?: number;
   onSaleOnly?: boolean;
+  onlineOnly?: boolean;
+  sortBy?: "recent" | "price_asc" | "price_desc" | "rating";
 }>;
 
 export type LandingPageSnapshot = Readonly<{

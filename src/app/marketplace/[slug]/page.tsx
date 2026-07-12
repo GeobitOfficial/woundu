@@ -5,12 +5,16 @@ import { MapPin, Tag } from "lucide-react";
 
 import { ProductCardMarketActions } from "@/components/marketplace/ProductCardMarketActions";
 import { ProductImageGallery } from "@/components/marketplace/ProductImageGallery";
+import { MarketplaceProductGrid } from "@/components/marketplace/MarketplaceProductGrid";
 import { ProductRatingStars } from "@/components/marketplace/ProductRatingStars";
 import { ProductReviewsSection } from "@/components/marketplace/ProductReviewsSection";
 import { ProductSellerCard } from "@/components/marketplace/ProductSellerCard";
 import { Badge } from "@/components/ui";
 import { getSellerPayoutProfileForUser } from "@/features/account/services/payoutReadService";
-import { getMarketplaceProductBySlug } from "@/features/products/services/productService";
+import {
+  getMarketplaceProductBySlug,
+  getMarketplaceProducts,
+} from "@/features/products/services/productService";
 import { getProductReviewsForProduct } from "@/features/reviews/services/reviewReadService";
 import { getBuyerPurchaseContext } from "@/services/supabase/account/buyerPurchaseContext";
 import { getAuthenticatedUser } from "@/services/supabase/auth/getAuthenticatedUser";
@@ -62,7 +66,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   const user = await getAuthenticatedUser();
   const supabase = await createSupabaseServerClient();
-  const [favorited, sellerPayout, reviews, buyerPurchaseContext] = await Promise.all([
+  const [favorited, sellerPayout, reviews, buyerPurchaseContext, relatedProducts] = await Promise.all([
     user && supabase
       ? listFavoriteProductIdsForUser(supabase, user.id).then((ids) =>
           ids.includes(product.id),
@@ -73,6 +77,9 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     user && supabase
       ? getBuyerPurchaseContext(supabase, user.id)
       : Promise.resolve({ isBuyer: false, shippingComplete: false }),
+    product.category?.slug
+      ? getMarketplaceProducts({ categorySlug: product.category.slug })
+      : Promise.resolve([]),
   ]);
 
   // fetch seller role to determine if product belongs to an admin (payments allowed)
@@ -90,6 +97,9 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const categoryHref = product.category
     ? `/marketplace?categoria=${encodeURIComponent(product.category.slug)}`
     : "/marketplace";
+  const relatedVisible = relatedProducts
+    .filter((candidate) => candidate.id !== product.id)
+    .slice(0, 5);
 
   return (
     <main className="min-h-screen bg-[#eaeded]">
@@ -250,6 +260,35 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             reviews={reviews}
           />
         </div>
+
+        {relatedVisible.length > 0 ? (
+          <section className="mt-6 space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-slate-950">Más de esta categoría</h2>
+                <p className="text-sm text-slate-600">
+                  Productos similares para seguir explorando.
+                </p>
+              </div>
+              {product.category ? (
+                <Link className="text-sm font-semibold text-brand hover:underline" href={categoryHref}>
+                  Ver categoría
+                </Link>
+              ) : null}
+            </div>
+
+            <MarketplaceProductGrid
+              buyerPurchaseContext={buyerPurchaseContext}
+              favoriteProductIds={favorited ? [product.id] : []}
+              hrefState={{ categorySlug: product.category?.slug }}
+              page={1}
+              products={relatedVisible}
+              totalPages={1}
+              totalProducts={relatedVisible.length}
+              viewerId={user?.id ?? null}
+            />
+          </section>
+        ) : null}
       </div>
     </main>
   );

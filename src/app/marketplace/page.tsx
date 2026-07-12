@@ -1,31 +1,23 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 
 import {
-  CatalogEmptyState,
-  MarketplaceCatalogWithFavorites,
-  MarketplaceCategorySection,
   MarketplaceFiltersPanel,
-  MarketplaceProductGrid,
+  MarketplaceResultsSection,
 } from "@/components/marketplace";
 import {
   latinAmericaCountryFromSlug,
   latinAmericaCountryToSlug,
 } from "@/constants/latinAmericaCountries";
-import {
-  getMarketplaceCategories,
-  getMarketplaceProducts,
-} from "@/features/products";
-import { MARKETPLACE_PAGE_SIZE } from "@/features/products/marketplaceConstants";
-import { buildProductCountByCategoryId } from "@/lib/marketplaceCategoryCounts";
+import { getMarketplaceCategories } from "@/features/products";
 import {
   type MarketplaceHrefValues,
   parseMinStarsQueryParam,
   parseOnSaleQueryParam,
+  parseOnlineOnlyQueryParam,
   parsePageQueryParam,
   parsePriceQueryParam,
-  toMarketplaceHref,
+  parseSortByQueryParam,
 } from "@/lib/marketplaceFilters";
 
 export const revalidate = 60;
@@ -45,6 +37,8 @@ type MarketplacePageProps = Readonly<{
     max_precio?: string;
     min_estrellas?: string;
     solo_ofertas?: string;
+    solo_online?: string;
+    orden?: string;
     pagina?: string;
   }>;
 }>;
@@ -69,6 +63,8 @@ export default async function MarketplacePage({
   const maxPrecio = parsePriceQueryParam(params.max_precio);
   const minEstrellas = parseMinStarsQueryParam(params.min_estrellas);
   const soloOfertas = parseOnSaleQueryParam(params.solo_ofertas);
+  const soloOnline = parseOnlineOnlyQueryParam(params.solo_online);
+  const sortBy = parseSortByQueryParam(params.orden);
   const requestedPage = parsePageQueryParam(params.pagina);
 
   const hrefState: MarketplaceHrefValues = {
@@ -79,49 +75,12 @@ export default async function MarketplacePage({
     maxPrice: maxPrecio,
     minStars: minEstrellas,
     onSaleOnly: soloOfertas,
+    onlineOnly: soloOnline,
+    sortBy,
     page: requestedPage > 1 ? requestedPage : undefined,
   };
 
-  const [categories, products] = await Promise.all([
-    getMarketplaceCategories(),
-    getMarketplaceProducts({
-      categorySlug,
-      country: countryForQuery,
-      search,
-      minPrice: minPrecio,
-      maxPrice: maxPrecio,
-      minStars: minEstrellas,
-      onSaleOnly: soloOfertas,
-    }),
-  ]);
-
-  const totalProducts = products.length;
-  const totalPages =
-    totalProducts === 0 ? 0 : Math.ceil(totalProducts / MARKETPLACE_PAGE_SIZE);
-
-  if (totalPages > 0 && requestedPage > totalPages) {
-    redirect(
-      toMarketplaceHref({
-        categorySlug,
-        search,
-        countrySlug: countrySlugCanonical,
-        minPrice: minPrecio,
-        maxPrice: maxPrecio,
-        minStars: minEstrellas,
-        onSaleOnly: soloOfertas,
-        page: totalPages,
-      }),
-    );
-  }
-
-  const page = requestedPage;
-  const pageStart = (page - 1) * MARKETPLACE_PAGE_SIZE;
-  const paginatedProducts = products.slice(
-    pageStart,
-    pageStart + MARKETPLACE_PAGE_SIZE,
-  );
-
-  const productCountByCategoryId = buildProductCountByCategoryId(products);
+  const categories = await getMarketplaceCategories();
   const selectedCategory = categorySlug
     ? categories.find((c) => c.slug === categorySlug)
     : undefined;
@@ -147,13 +106,7 @@ export default async function MarketplacePage({
               precio abajo.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-6 px-4 py-4 sm:px-6">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                Resultados
-              </p>
-              <p className="text-2xl font-bold text-slate-950">{totalProducts}</p>
-            </div>
+          <div className="flex flex-wrap items-center gap-4 px-4 py-4 sm:px-6">
             {selectedCategory ? (
               <div className="rounded-sm bg-brand-light px-3 py-2 text-sm text-brand-dark">
                 Filtrando: <strong>{selectedCategory.name}</strong>
@@ -168,14 +121,6 @@ export default async function MarketplacePage({
         </header>
 
         <div className="space-y-6">
-          <MarketplaceCategorySection
-            categories={categories}
-            hrefState={hrefState}
-            productCountByCategoryId={productCountByCategoryId}
-            selectedCategorySlug={categorySlug}
-            totalProductCount={totalProducts}
-          />
-
           <MarketplaceFiltersPanel
             activeCountryName={countryForQuery}
             hrefState={hrefState}
@@ -183,28 +128,17 @@ export default async function MarketplacePage({
 
           <Suspense
             fallback={
-              totalProducts > 0 ? (
-                <MarketplaceProductGrid
-                  favoriteProductIds={[]}
-                  hrefState={hrefState}
-                  page={page}
-                  products={paginatedProducts}
-                  totalPages={totalPages}
-                  totalProducts={totalProducts}
-                  viewerId={null}
-                />
-              ) : (
-                <CatalogEmptyState countryName={countryForQuery} />
-              )
+              <div className="space-y-6">
+                <div className="h-24 animate-pulse rounded-sm border border-slate-200 bg-white shadow-sm" />
+                <div className="h-64 animate-pulse rounded-sm border border-slate-200 bg-white shadow-sm" />
+                <div className="h-[32rem] animate-pulse rounded-sm border border-slate-200 bg-white shadow-sm" />
+              </div>
             }
           >
-            <MarketplaceCatalogWithFavorites
-              countryName={countryForQuery}
+            <MarketplaceResultsSection
+              activeCountryName={countryForQuery}
+              categories={categories}
               hrefState={hrefState}
-              page={page}
-              products={paginatedProducts}
-              totalPages={totalPages}
-              totalProducts={totalProducts}
             />
           </Suspense>
         </div>

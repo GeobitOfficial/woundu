@@ -490,10 +490,24 @@ export async function getMarketplaceProducts(
     query = query.eq("is_on_offer", true);
   }
 
+  if (filters.onlineOnly) {
+    query = query.in("profiles.role", ["admin", "super_admin"]);
+  }
+
   const search = normalizeSearch(filters.search);
 
   if (search) {
     query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+  }
+
+  if (filters.sortBy === "price_asc") {
+    query = query.order("price", { ascending: true });
+  } else if (filters.sortBy === "price_desc") {
+    query = query.order("price", { ascending: false });
+  } else if (filters.sortBy === "rating") {
+    query = query.order("rating_average", { ascending: false }).order("reviews_count", {
+      ascending: false,
+    });
   }
 
   const { data, error } = await query;

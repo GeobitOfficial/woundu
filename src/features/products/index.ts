@@ -21,6 +21,7 @@ export {
   getMarketplaceCategories,
   getMarketplaceProducts,
   getMarketplaceProductBySlug,
+  getMarketplaceProducts as getRelatedMarketplaceProducts,
 } from "./services/productService";
 export { createProduct, deleteProduct } from "./services/productMutations";
 export type {

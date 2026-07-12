@@ -9,6 +9,8 @@ export type MarketplaceHrefValues = Readonly<{
   maxPrice?: number;
   minStars?: number;
   onSaleOnly?: boolean;
+  sortBy?: "recent" | "price_asc" | "price_desc" | "rating";
+  onlineOnly?: boolean;
   page?: number;
 }>;
 
@@ -46,6 +48,14 @@ export function toMarketplaceHref(values: MarketplaceHrefValues): string {
 
   if (values.onSaleOnly) {
     params.set("solo_ofertas", "1");
+  }
+
+  if (values.onlineOnly) {
+    params.set("solo_online", "1");
+  }
+
+  if (values.sortBy) {
+    params.set("orden", values.sortBy);
   }
 
   if (values.page != null && Number.isInteger(values.page) && values.page > 1) {
@@ -101,6 +111,24 @@ export function parseMinStarsQueryParam(raw: string | undefined): number | undef
 
 export function parseOnSaleQueryParam(raw: string | undefined): boolean {
   return raw === "1" || raw === "true";
+}
+
+export function parseOnlineOnlyQueryParam(raw: string | undefined): boolean {
+  return raw === "1" || raw === "true";
+}
+
+export function parseSortByQueryParam(
+  raw: string | undefined,
+): "recent" | "price_asc" | "price_desc" | "rating" {
+  if (
+    raw === "price_asc" ||
+    raw === "price_desc" ||
+    raw === "rating"
+  ) {
+    return raw;
+  }
+
+  return "recent";
 }
 
 export function normalizePriceRange(
