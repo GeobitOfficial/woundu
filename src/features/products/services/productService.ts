@@ -494,10 +494,17 @@ export async function getMarketplaceProducts(
     query = query.in("profiles.role", ["admin", "super_admin"]);
   }
 
-  const search = normalizeSearch(filters.search);
+  const searchTerms = normalizeSearchTerms(filters.search);
 
-  if (search) {
-    query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+  if (searchTerms.length > 0) {
+    const broadSearch = searchTerms
+      .flatMap((term) => [
+        `title.ilike.%${term}%`,
+        `description.ilike.%${term}%`,
+      ])
+      .join(",");
+
+    query = query.or(broadSearch);
   }
 
   if (filters.sortBy === "price_asc") {
@@ -516,7 +523,15 @@ export async function getMarketplaceProducts(
     return [];
   }
 
-  return (data as unknown as ProductListRow[]).map(mapProduct);
+  const mappedProducts = (data as unknown as ProductListRow[]).map(mapProduct);
+
+  if (searchTerms.length === 0) {
+    return mappedProducts;
+  }
+
+  return mappedProducts.filter((product) =>
+    matchesAllSearchTerms(product, searchTerms),
+  );
 }
 
 export async function getMarketplaceProductBySlug(
@@ -611,6 +626,7 @@ function mapProduct(row: ProductListRow): ProductCardItem {
           fullName: seller.full_name,
           username: seller.username,
           avatarUrl: seller.avatar_url,
+          role: seller.role,
           reputationScore: Number(seller.reputation_score),
           reviewsCount: seller.reviews_count,
           whatsapp: seller.whatsapp?.trim() ? seller.whatsapp.trim() : null,
@@ -649,6 +665,41 @@ function mapProductImage(row: ProductImageRow): ProductImage {
   };
 }
 
-function normalizeSearch(search?: string) {
-  return search?.trim().replace(/[%(),]/g, "").slice(0, 80) ?? "";
+function normalizeSearchTerms(search?: string): string[] {
+  const normalized =
+    search
+      ?.trim()
+      .toLowerCase()
+      .replace(/[%(),]/g, "")
+      .replace(/\s+/g, " ")
+      .slice(0, 80) ?? "";
+
+  if (!normalized) {
+    return [];
+  }
+
+  return normalized
+    .split(" ")
+    .map((term) => term.trim())
+    .filter((term) => term.length >= 2);
+}
+
+function normalizeTextForSearch(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function matchesAllSearchTerms(
+  product: ProductCardItem,
+  searchTerms: ReadonlyArray<string>,
+): boolean {
+  const searchableText = normalizeTextForSearch(
+    `${product.title} ${product.description}`,
+  );
+
+  return searchTerms.every((term) =>
+    searchableText.includes(normalizeTextForSearch(term)),
+  );
 }
