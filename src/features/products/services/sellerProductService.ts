@@ -29,28 +29,23 @@ export type SellerProductEditRecord = Readonly<{
   currency: string;
   country: string | null;
   city: string | null;
+  categoryId: string | null;
   condition: ProductCondition;
   status: ProductStatus;
   stock: number;
   shippingType: "free" | "paid";
 }>;
 
-type ProductRow = {
+type SellerProductListRow = {
   id: string;
   title: string;
   slug: string;
-  description: string;
   price: string | number;
-  compare_at_price: string | number | null;
-  is_on_offer: boolean;
   currency: string;
   country: string | null;
-  city: string | null;
   category_id: string | null;
-  condition: ProductCondition;
   status: ProductStatus;
   stock: number;
-  shipping_type?: "free" | "paid";
   updated_at: string;
   categories:
     | {
@@ -73,6 +68,23 @@ type ProductRow = {
         is_primary: boolean;
       }>
     | null;
+};
+
+type SellerProductEditRow = {
+  id: string;
+  title: string;
+  description: string;
+  price: string | number;
+  compare_at_price: string | number | null;
+  is_on_offer: boolean;
+  currency: string;
+  country: string | null;
+  city: string | null;
+  category_id: string | null;
+  condition: ProductCondition;
+  status: ProductStatus;
+  stock: number;
+  shipping_type?: "free" | "paid";
 };
 
 const SELLER_PRODUCTS_SELECT = `
@@ -108,7 +120,7 @@ function getFirstRelation<Relation>(relation: Relation | Relation[] | null) {
 }
 
 function pickPrimaryImagePath(
-  images: ProductRow["product_images"],
+  images: SellerProductListRow["product_images"],
 ): string | null {
   if (!images?.length) {
     return null;
@@ -129,7 +141,7 @@ function pickPrimaryImagePath(
   return sorted[0]?.storage_path ?? null;
 }
 
-function mapSellerProductRow(row: ProductRow): SellerProductListItem {
+function mapSellerProductRow(row: SellerProductListRow): SellerProductListItem {
   const category = getFirstRelation(row.categories);
 
   return {
@@ -166,7 +178,7 @@ export async function getSellerProducts(
     return [];
   }
 
-  return (data as ProductRow[]).map(mapSellerProductRow);
+  return (data as SellerProductListRow[]).map(mapSellerProductRow);
 }
 
 export async function getSellerProductForEdit(
@@ -188,7 +200,7 @@ export async function getSellerProductForEdit(
     return null;
   }
 
-  const row = data as Omit<ProductRow, "categories" | "product_images" | "slug" | "updated_at">;
+  const row = data as SellerProductEditRow;
 
   return {
     id: row.id,
