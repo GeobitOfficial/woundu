@@ -117,9 +117,9 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
 
   const buyerMailHtml = `
     <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1e293b;">
-      <h2 style="color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">¡Tu solicitud de compra ha sido creada!</h2>
+      <h2 style="color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">¡Confirmación de tu compra!</h2>
       <p style="font-size: 16px; line-height: 1.5;">Hola <strong>${buyer.full_name}</strong>,</p>
-      <p style="font-size: 15px; line-height: 1.5;">Hemos registrado tu interés en el producto <strong>${product?.title}</strong> del vendedor <strong>${seller?.full_name}</strong>.</p>
+      <p style="font-size: 15px; line-height: 1.5;">Tu compra del producto <strong>${product?.title}</strong> del vendedor <strong>${seller?.full_name}</strong> ha sido confirmada.</p>
       
       <div style="background-color: #f1f5f9; border-radius: 8px; padding: 16px; margin: 20px 0;">
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
@@ -142,9 +142,9 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
         </table>
       </div>
 
-      <p style="font-size: 15px; font-weight: bold; margin-top: 25px;">Próximo paso para concretar tu compra:</p>
+      <p style="font-size: 15px; font-weight: bold; margin-top: 25px;">Estado del Pedido:</p>
       <p style="font-size: 14px; line-height: 1.5; color: #475569;">
-        Coordinar el pago y el envío directamente con el vendedor. Woundu no procesa pagos en línea para esta publicación.
+        El pago/compra ha sido confirmado. Puedes revisar los datos del vendedor y el estado del envío en tu cuenta de Woundu.
       </p>
 
       <!-- Enlace de WhatsApp temporalmente deshabilitado -->
@@ -161,9 +161,9 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
   // --- CORREO AL VENDEDOR ---
   const sellerMailHtml = `
     <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1e293b;">
-      <h2 style="color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">¡Tienes un nuevo interesado en tu producto!</h2>
+      <h2 style="color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">¡Confirmación de venta de tu producto!</h2>
       <p style="font-size: 16px; line-height: 1.5;">Hola <strong>${seller.full_name}</strong>,</p>
-      <p style="font-size: 15px; line-height: 1.5;">El usuario <strong>${buyer.full_name}</strong> ha registrado una intención de compra para tu producto <strong>${product?.title}</strong>.</p>
+      <p style="font-size: 15px; line-height: 1.5;">La compra del producto <strong>${product?.title}</strong> por parte del comprador <strong>${buyer.full_name}</strong> ha sido confirmada.</p>
       
       <div style="background-color: #f1f5f9; border-radius: 8px; padding: 16px; margin: 20px 0;">
         <h3 style="margin-top: 0; font-size: 15px; color: #334155;">Datos del Comprador y Envío:</h3>
@@ -202,7 +202,7 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
       </div>
 
       <p style="font-size: 14px; line-height: 1.5; color: #475569;">
-        El comprador se pondrá en contacto contigo para coordinar el pago directo (mediante tus métodos configurados) y la entrega. También puedes contactar al comprador usando sus datos de contacto provistos arriba (teléfono / correo).
+        Puedes coordinar la entrega del producto con el comprador utilizando los datos de contacto provistos arriba (teléfono / correo).
       </p>
 
       <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
@@ -220,7 +220,7 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
     emailPromises.push(
       sendTransactionalEmail({
         to: [{ email: buyer.email, name: buyer.full_name }],
-        subject: `¡Solicitud de compra creada! Pedido #${orderIdShort} - Woundu`,
+        subject: `¡Confirmación de compra! Pedido #${orderIdShort} - Woundu`,
         htmlContent: buyerMailHtml,
       })
     );
@@ -231,7 +231,7 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
     emailPromises.push(
       sendTransactionalEmail({
         to: [{ email: seller.email, name: seller.full_name }],
-        subject: `¡Nuevo interesado en tu publicación! Pedido #${orderIdShort} - Woundu`,
+        subject: `¡Confirmación de venta de tu producto! Pedido #${orderIdShort} - Woundu`,
         htmlContent: sellerMailHtml,
       })
     );

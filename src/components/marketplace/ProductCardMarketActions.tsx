@@ -125,13 +125,6 @@ export function ProductCardMarketActions({
       return;
     }
     if (data) {
-      // Disparar el envío de correos en segundo plano usando fetch (fire-and-forget)
-      fetch("/api/orders/email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: data.orderId }),
-      }).catch((err) => console.error("Error enviando correo:", err));
-
       router.push(`/cuenta/pedidos/${data.orderId}`);
     }
   }

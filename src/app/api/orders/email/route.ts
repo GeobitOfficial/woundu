@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const result = await sendOrderEmailsAction(orderId);
     return NextResponse.json(result);
   } catch (error) {
-    console.error("❌ Error en API route de envío de correos:", error);
+    console.error("Error en API route de envío de correos:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Internal Server Error" },
       { status: 500 }

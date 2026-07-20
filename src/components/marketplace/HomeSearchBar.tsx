@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { type FormEvent, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { SearchAutocompleteInput } from "./SearchAutocompleteInput";
 
 type HomeSearchBarProps = Readonly<{
   className?: string;
@@ -18,8 +19,10 @@ export function HomeSearchBar({
   const router = useRouter();
   const [query, setQuery] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function handleSubmit(event?: FormEvent<HTMLFormElement>) {
+    if (event) {
+      event.preventDefault();
+    }
     const trimmed = query.trim();
     const params = new URLSearchParams();
     if (trimmed) {
@@ -31,30 +34,22 @@ export function HomeSearchBar({
 
   return (
     <form
-      className={cn("flex w-full overflow-hidden rounded-md shadow-sm", className)}
+      className={cn("relative flex w-full items-center gap-2", className)}
       onSubmit={handleSubmit}
       role="search"
     >
-      <label className="sr-only" htmlFor="home-search">
-        Buscar productos
-      </label>
-      <input
-        className={cn(
-          "min-w-0 flex-1 border border-slate-300 bg-white px-4 text-slate-900 placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30",
-          size === "large" ? "h-12 text-base" : "h-10 text-sm",
-        )}
-        id="home-search"
-        name="q"
-        onChange={(event) => setQuery(event.target.value)}
+      <SearchAutocompleteInput
+        onChange={setQuery}
+        onSubmit={handleSubmit}
         placeholder="Buscar productos, marcas y más..."
-        type="search"
+        size={size}
         value={query}
       />
       <button
         aria-label="Buscar"
         className={cn(
           "inline-flex shrink-0 items-center justify-center bg-brand px-5 font-semibold text-white transition hover:bg-brand-hover",
-          size === "large" ? "h-12 text-base" : "h-10 text-sm",
+          size === "large" ? "h-12 rounded-2xl text-base" : "h-10 rounded-md text-sm",
         )}
         type="submit"
       >

@@ -12,6 +12,7 @@ import {
   toMarketplaceHref,
   type MarketplaceHrefValues,
 } from "@/lib/marketplaceFilters";
+import { SearchAutocompleteInput } from "./SearchAutocompleteInput";
 
 type MarketplaceFiltersPanelProps = Readonly<{
   hrefState: MarketplaceHrefValues;
@@ -156,7 +157,7 @@ export function MarketplaceFiltersPanel({
   }
 
   return (
-    <section className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
+    <section className="rounded-sm border border-slate-200 bg-white shadow-sm">
       <FiltersHeader
         activeCountryName={activeCountryName}
         hrefState={hrefState}
@@ -167,36 +168,19 @@ export function MarketplaceFiltersPanel({
           className="rounded-3xl border border-slate-200 bg-[linear-gradient(135deg,#fff_0%,#f8fafc_65%,#eef2ff_100%)] p-4 shadow-sm"
           onSubmit={handleSubmit}
         >
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <label className="relative flex-1">
-              <Search aria-hidden className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <span className="sr-only">Buscar</span>
-              <input
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-10 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/10"
-                onChange={(event) => setSearch(event.target.value)}
-                onKeyDown={handleSearchKeyDown}
-                placeholder="Escribe y presiona Enter..."
-                type="text"
+          <div className="space-y-4">
+            <div className="relative w-full">
+              <SearchAutocompleteInput
+                inputClassName="rounded-2xl border-slate-200 focus:border-brand focus:ring-4 focus:ring-brand/10"
+                onChange={setSearch}
+                onSubmit={applySearchAndPriceFilters}
+                placeholder="Escribe para autocompletar productos..."
+                size="large"
                 value={search}
               />
-              {search ? (
-                <button
-                  aria-label="Limpiar búsqueda"
-                  className="absolute right-3 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                  onClick={() => {
-                    setSearch("");
-                    if (hrefState.search) {
-                      navigate({ search: undefined });
-                    }
-                  }}
-                  type="button"
-                >
-                  <X aria-hidden className="h-4 w-4" />
-                </button>
-              ) : null}
-            </label>
+            </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 lg:w-[30rem]">
+            <div className="grid gap-3 sm:grid-cols-3 w-full">
               <label className="space-y-1.5">
                 <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Ordenar

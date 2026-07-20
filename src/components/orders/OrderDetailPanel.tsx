@@ -60,6 +60,13 @@ export function OrderDetailPanel({ order }: OrderDetailPanelProps) {
         setStatusMessage(result.error);
         return;
       }
+      // Disparar correo de confirmación de pago
+      fetch("/api/orders/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id }),
+      }).catch((err) => console.error("Error enviando correo:", err));
+
       setStatusMessage("Pago reportado. El vendedor lo confirmará.");
       router.refresh();
     } catch (error) {
@@ -83,6 +90,13 @@ export function OrderDetailPanel({ order }: OrderDetailPanelProps) {
       setStatusMessage(result.error);
       return;
     }
+    // Disparar correo de confirmación al cambiar estado
+    fetch("/api/orders/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId: order.id }),
+    }).catch((err) => console.error("Error enviando correo:", err));
+
     setStatusMessage(success);
     router.refresh();
   }
