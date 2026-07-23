@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Store } from "lucide-react";
 
 import {
   MarketplaceFiltersPanel,
@@ -92,55 +93,74 @@ export default async function MarketplacePage({
       : "Marketplace Woundu";
 
   return (
-    <main className="min-h-screen bg-[#eaeded]">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-6 overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 bg-[#232f3e] px-4 py-4 text-white sm:px-6">
-            <p className="text-xs font-bold uppercase tracking-wide text-brand">
+    <main className="min-h-screen bg-[#eaeded] pb-12">
+      
+      {/* 1. HEADER BANNER REDISEÑADO A ANCHO COMPLETO */}
+      <header className="relative w-full overflow-hidden bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white shadow-xl border-b border-slate-800">
+        <div className="w-full px-4 py-8 sm:px-6 lg:px-12 relative md:py-12">
+          <Store className="absolute right-8 top-1/2 -translate-y-1/2 h-24 w-24 text-white/5 pointer-events-none md:h-32 md:w-32" />
+          <div className="relative z-10">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-brand">
               Catálogo comercial
+            </span>
+            <h1 className="mt-2 text-2xl font-black md:text-4xl text-white">
+              {pageTitle}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">
+              Explora los mejores productos en el marketplace de Woundu. Filtra por categoría, rango de precios o país.
             </p>
-            <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{pageTitle}</h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-300">
-              Productos segmentados por categoría con precio, calificación y
-              ofertas. Usa los departamentos para filtrar o ajusta búsqueda y
-              precio abajo.
-            </p>
+            {/* Filtros seleccionados activos en el encabezado */}
+            <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+              {selectedCategory ? (
+                <span className="rounded-full bg-brand/20 border border-brand/30 px-3 py-1.5 text-brand">
+                  Categoría: {selectedCategory.name}
+                </span>
+              ) : null}
+              {countryForQuery ? (
+                <span className="rounded-full bg-blue-500/20 border border-blue-500/30 px-3 py-1.5 text-blue-400">
+                  País: {countryForQuery}
+                </span>
+              ) : null}
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-4 px-4 py-4 sm:px-6">
-            {selectedCategory ? (
-              <div className="rounded-sm bg-brand-light px-3 py-2 text-sm text-brand-dark">
-                Filtrando: <strong>{selectedCategory.name}</strong>
-              </div>
-            ) : null}
-            {countryForQuery ? (
-              <div className="rounded-sm bg-brand-light px-3 py-2 text-sm text-brand-dark">
-                País: <strong>{countryForQuery}</strong>
-              </div>
-            ) : null}
-          </div>
-        </header>
+        </div>
+      </header>
 
-        <div className="space-y-6">
-          <MarketplaceFiltersPanel
-            activeCountryName={countryForQuery}
-            hrefState={hrefState}
-          />
-
-          <Suspense
-            fallback={
-              <div className="space-y-6">
-                <div className="h-24 animate-pulse rounded-sm border border-slate-200 bg-white shadow-sm" />
-                <div className="h-64 animate-pulse rounded-sm border border-slate-200 bg-white shadow-sm" />
-                <div className="h-[32rem] animate-pulse rounded-sm border border-slate-200 bg-white shadow-sm" />
-              </div>
-            }
-          >
-            <MarketplaceResultsSection
+      {/* 2. DISEÑO DE COLUMNAS CON ANCHO COMPLETO A LA IZQUIERDA Y DERECHA */}
+      <div className="w-full px-4 py-8 sm:px-6 lg:px-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Columna Izquierda: Panel de Filtros & Categorías (Compacto al extremo izquierdo) */}
+          <aside className="lg:col-span-3 xl:col-span-2 lg:sticky lg:top-24">
+            <MarketplaceFiltersPanel
               activeCountryName={countryForQuery}
-              categories={categories}
               hrefState={hrefState}
+              categories={categories}
             />
-          </Suspense>
+          </aside>
+
+          {/* Columna Derecha: Listado de Productos (Mayor espacio de visualización) */}
+          <div className="lg:col-span-9 xl:col-span-10">
+            <Suspense
+              fallback={
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div
+                      key={i}
+                      className="h-96 animate-pulse rounded-3xl bg-white shadow-sm border border-slate-200"
+                    />
+                  ))}
+                </div>
+              }
+            >
+              <MarketplaceResultsSection
+                activeCountryName={countryForQuery}
+                categories={categories}
+                hrefState={hrefState}
+              />
+            </Suspense>
+          </div>
+
         </div>
       </div>
     </main>

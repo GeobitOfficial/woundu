@@ -73,7 +73,7 @@ export function SiteHeaderClient({
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         {/* LOGO */}
         <Link
-          className="flex shrink-0 items-center rounded-md bg-white/95 px-2 py-1 outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/80"
+          className="flex shrink-0 items-center rounded-md outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/80"
           href="/"
         >
           <img

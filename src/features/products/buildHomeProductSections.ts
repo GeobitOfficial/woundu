@@ -39,15 +39,6 @@ type LandingProductBuckets = Readonly<{
 
 const HOME_SECTION_DEFINITIONS = [
   {
-    id: "top-ventas",
-    title: "Top ventas",
-    viewAllHref: "/marketplace?min_estrellas=4",
-    viewAllLabel: "Ver top ventas",
-    theme: "spotlight-dark" as const,
-    resolve: (buckets: LandingProductBuckets) =>
-      pickSectionProducts(buckets.topRatedProducts),
-  },
-  {
     id: "ofertas",
     title: "Ofertas imperdibles",
     viewAllHref: "/marketplace?solo_ofertas=1",

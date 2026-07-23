@@ -4,11 +4,9 @@ import { getMarketplaceProducts } from "@/features/products";
 import { MARKETPLACE_PAGE_SIZE } from "@/features/products/marketplaceConstants";
 import type { MarketplaceHrefValues } from "@/lib/marketplaceFilters";
 import { toMarketplaceHref } from "@/lib/marketplaceFilters";
-import { buildProductCountByCategoryId } from "@/lib/marketplaceCategoryCounts";
 import type { Category } from "@/types";
 
 import { MarketplaceCatalogWithFavorites } from "./MarketplaceCatalogWithFavorites";
-import { MarketplaceCategorySection } from "./MarketplaceCategorySection";
 
 type MarketplaceResultsSectionProps = Readonly<{
   activeCountryName?: string;
@@ -52,26 +50,15 @@ export async function MarketplaceResultsSection({
     pageStart,
     pageStart + MARKETPLACE_PAGE_SIZE,
   );
-  const productCountByCategoryId = buildProductCountByCategoryId(products);
 
   return (
-    <div className="space-y-6">
-      <MarketplaceCategorySection
-        categories={categories}
-        hrefState={hrefState}
-        productCountByCategoryId={productCountByCategoryId}
-        selectedCategorySlug={hrefState.categorySlug}
-        totalProductCount={totalProducts}
-      />
-
-      <MarketplaceCatalogWithFavorites
-        countryName={activeCountryName}
-        hrefState={hrefState}
-        page={requestedPage}
-        products={paginatedProducts}
-        totalPages={totalPages}
-        totalProducts={totalProducts}
-      />
-    </div>
+    <MarketplaceCatalogWithFavorites
+      countryName={activeCountryName}
+      hrefState={hrefState}
+      page={requestedPage}
+      products={paginatedProducts}
+      totalPages={totalPages}
+      totalProducts={totalProducts}
+    />
   );
 }

@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { KeyboardEvent } from "react";
-import { Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
+import { SlidersHorizontal, Star, X } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -13,18 +12,23 @@ import {
   type MarketplaceHrefValues,
 } from "@/lib/marketplaceFilters";
 import { SearchAutocompleteInput } from "./SearchAutocompleteInput";
+import type { Category } from "@/types";
 
 type MarketplaceFiltersPanelProps = Readonly<{
   hrefState: MarketplaceHrefValues;
   activeCountryName?: string;
+  categories?: ReadonlyArray<Category>;
 }>;
 
 export function MarketplaceFiltersPanel({
   hrefState,
   activeCountryName,
+  categories = [],
 }: MarketplaceFiltersPanelProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isOpen, setIsOpen] = useState(false); // Control del menú móvil colapsable
+
   const [search, setSearch] = useState(hrefState.search ?? "");
   const [minPrice, setMinPrice] = useState(
     hrefState.minPrice != null ? String(hrefState.minPrice) : "",
@@ -94,9 +98,39 @@ export function MarketplaceFiltersPanel({
   }
 
   function navigate(next?: Partial<MarketplaceHrefValues>) {
-    const href = buildHref({ page: undefined, ...next });
+    const mergedState = {
+      categorySlug: hrefState.categorySlug,
+      countrySlug: hrefState.countrySlug,
+      search: hrefState.search,
+      minPrice: hrefState.minPrice,
+      maxPrice: hrefState.maxPrice,
+      minStars: hrefState.minStars,
+      onSaleOnly: hrefState.onSaleOnly,
+      onlineOnly: hrefState.onlineOnly,
+      sortBy: hrefState.sortBy,
+      ...next,
+    };
+
+    // Si no queda ningún filtro de búsqueda activo, redirigir al Home "/"
+    const hasActiveFilters =
+      Boolean(mergedState.categorySlug) ||
+      Boolean(mergedState.search) ||
+      mergedState.minPrice != null ||
+      mergedState.maxPrice != null ||
+      (mergedState.minStars != null && mergedState.minStars >= 1) ||
+      mergedState.onSaleOnly ||
+      mergedState.onlineOnly;
+
+    const targetUrl = hasActiveFilters
+      ? toMarketplaceHref({ ...mergedState, page: undefined })
+      : "/";
+
     startTransition(() => {
-      router.replace(href);
+      if (targetUrl === "/") {
+        router.push("/");
+      } else {
+        router.replace(targetUrl);
+      }
     });
   }
 
@@ -104,9 +138,7 @@ export function MarketplaceFiltersPanel({
     if (value.trim() === "") {
       return undefined;
     }
-
     const parsed = Number(value);
-
     return Number.isFinite(parsed) ? parsed : undefined;
   }
 
@@ -130,15 +162,6 @@ export function MarketplaceFiltersPanel({
     applySearchAndPriceFilters();
   }
 
-  function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== "Enter") {
-      return;
-    }
-
-    event.preventDefault();
-    applySearchAndPriceFilters();
-  }
-
   function resetAdvancedFilters() {
     setMinPrice("");
     setMaxPrice("");
@@ -157,260 +180,314 @@ export function MarketplaceFiltersPanel({
   }
 
   return (
-    <section className="rounded-sm border border-slate-200 bg-white shadow-sm">
-      <FiltersHeader
-        activeCountryName={activeCountryName}
-        hrefState={hrefState}
-      />
-
-      <div className="space-y-5 p-4 sm:p-5">
-        <form
-          className="rounded-3xl border border-slate-200 bg-[linear-gradient(135deg,#fff_0%,#f8fafc_65%,#eef2ff_100%)] p-4 shadow-sm"
-          onSubmit={handleSubmit}
+    <div className="w-full">
+      
+      {/* Botón de Filtros para Móviles */}
+      <div className="mb-4 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand py-3 text-sm font-black text-slate-950 shadow-md transition hover:bg-brand-hover"
         >
-          <div className="space-y-4">
-            <div className="relative w-full">
-              <SearchAutocompleteInput
-                inputClassName="rounded-2xl border-slate-200 focus:border-brand focus:ring-4 focus:ring-brand/10"
-                onChange={setSearch}
-                onSubmit={applySearchAndPriceFilters}
-                placeholder="Escribe para autocompletar productos..."
-                size="large"
-                value={search}
-              />
-            </div>
+          <SlidersHorizontal className="h-4 w-4" />
+          {isOpen ? "Ocultar filtros y categorías" : "Filtrar y Ordenar productos"}
+        </button>
+      </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 w-full">
-              <label className="space-y-1.5">
-                <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  Ordenar
-                </span>
-                <select
-                  className="h-12 w-full cursor-pointer rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
-                  onChange={(event) => {
-                    const nextSortBy = event.target.value as
-                      | "recent"
-                      | "price_asc"
-                      | "price_desc"
-                      | "rating";
+      {/* Contenedor de la Barra Lateral */}
+      <section
+        className={cn(
+          "rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 lg:block",
+          isOpen ? "block" : "hidden"
+        )}
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
 
-                    setSortBy(nextSortBy);
-                    navigate({
-                      sortBy: nextSortBy === "recent" ? undefined : nextSortBy,
-                    });
-                  }}
-                  value={sortBy}
+          {/* 1. CATEGORÍAS (DEPARTAMENTOS) */}
+          {categories.length > 0 && (
+            <div className="space-y-2.5">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                Categorías
+              </h3>
+              <div className="flex flex-col gap-2">
+                <Link
+                  href={toMarketplaceHref({ ...hrefState, categorySlug: undefined, page: undefined })}
+                  className={cn(
+                    "text-xs font-bold transition hover:text-brand",
+                    !hrefState.categorySlug ? "text-brand" : "text-slate-600"
+                  )}
                 >
-                  <option value="recent">Más recientes</option>
-                  <option value="price_asc">Menor precio</option>
-                  <option value="price_desc">Mayor precio</option>
-                  <option value="rating">Mejor calificados</option>
-                </select>
-              </label>
-
-              <label className="space-y-1.5">
-                <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  Desde
-                </span>
-                <input
-                  className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
-                  inputMode="decimal"
-                  min="0"
-                  onChange={(event) => setMinPrice(event.target.value)}
-                  placeholder="0"
-                  step="0.01"
-                  type="number"
-                  value={minPrice}
-                />
-              </label>
-
-              <label className="space-y-1.5">
-                <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  Hasta
-                </span>
-                <input
-                  className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
-                  inputMode="decimal"
-                  min="0"
-                  onChange={(event) => setMaxPrice(event.target.value)}
-                  placeholder="Sin tope"
-                  step="0.01"
-                  type="number"
-                  value={maxPrice}
-                />
-              </label>
+                  Todas las categorías
+                </Link>
+                {categories.map((cat) => {
+                  const isActive = hrefState.categorySlug === cat.slug;
+                  return (
+                    <Link
+                      key={cat.id}
+                      href={toMarketplaceHref({ ...hrefState, categorySlug: cat.slug, page: undefined })}
+                      className={cn(
+                        "text-xs transition hover:text-brand pl-2 border-l border-slate-200 hover:border-brand",
+                        isActive ? "text-brand font-black border-brand" : "text-slate-500 font-semibold"
+                      )}
+                    >
+                      {cat.name}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
+          )}
+
+          {/* 3. ORDENAR POR */}
+          <div className="space-y-2 border-t border-slate-100 pt-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+              Ordenar por
+            </h3>
+            <select
+              className="h-10 w-full cursor-pointer rounded-2xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-900 outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
+              onChange={(event) => {
+                const nextSortBy = event.target.value as
+                  | "recent"
+                  | "price_asc"
+                  | "price_desc"
+                  | "rating";
+                setSortBy(nextSortBy);
+                navigate({
+                  sortBy: nextSortBy === "recent" ? undefined : nextSortBy,
+                });
+              }}
+              value={sortBy}
+            >
+              <option value="recent">Más recientes</option>
+              <option value="price_asc">Menor precio</option>
+              <option value="price_desc">Mayor precio</option>
+              <option value="rating">Mejor calificados</option>
+            </select>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <ToggleChip
-              active={onSaleOnly}
-              icon={<Sparkles aria-hidden className="h-3.5 w-3.5" />}
-              label="Solo ofertas"
-              onClick={() => {
-                const nextValue = !onSaleOnly;
-
-                setOnSaleOnly(nextValue);
-                navigate({ onSaleOnly: nextValue ? true : undefined });
-              }}
-            />
-            <ToggleChip
-              active={onlineOnly}
-              icon={<SlidersHorizontal aria-hidden className="h-3.5 w-3.5" />}
-              label="Solo pago online"
-              onClick={() => {
-                const nextValue = !onlineOnly;
-
-                setOnlineOnly(nextValue);
-                navigate({ onlineOnly: nextValue ? true : undefined });
-              }}
-            />
-            {([5, 4, 3, 2, 1] as const).map((stars) => (
-              <ToggleChip
-                active={minStars === String(stars)}
-                key={stars}
-                label={`${stars}+ estrellas`}
-                onClick={() => {
-                  const nextValue = minStars === String(stars) ? "" : String(stars);
-
-                  setMinStars(nextValue);
-                  navigate({ minStars: nextValue ? Number(nextValue) : undefined });
-                }}
+          {/* 4. RANGO DE PRECIO */}
+          <div className="space-y-2 border-t border-slate-100 pt-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+              Rango de precio
+            </h3>
+            <div className="flex gap-2 items-center">
+              <input
+                className="h-10 w-full rounded-2xl border border-slate-200 bg-white px-3 text-xs text-slate-900 outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
+                inputMode="decimal"
+                min="0"
+                onChange={(event) => setMinPrice(event.target.value)}
+                placeholder="Mínimo"
+                type="number"
+                value={minPrice}
               />
-            ))}
-          </div>
-
-          {hasAdvanced || hrefState.search?.trim() ? (
-            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200/70 pt-4">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                Filtros activos
-              </span>
-              {hrefState.search?.trim() ? (
-                <ActiveChip
-                  label={`Buscar: ${hrefState.search.trim()}`}
-                  onClear={() => {
-                    setSearch("");
-                    navigate({ search: undefined });
-                  }}
-                />
-              ) : null}
-              {hrefState.minPrice != null ? (
-                <ActiveChip
-                  label={`Desde ${hrefState.minPrice}`}
-                  onClear={() => {
-                    setMinPrice("");
-                    navigate({ minPrice: undefined });
-                  }}
-                />
-              ) : null}
-              {hrefState.maxPrice != null ? (
-                <ActiveChip
-                  label={`Hasta ${hrefState.maxPrice}`}
-                  onClear={() => {
-                    setMaxPrice("");
-                    navigate({ maxPrice: undefined });
-                  }}
-                />
-              ) : null}
-              {hrefState.minStars != null ? (
-                <ActiveChip
-                  label={`${hrefState.minStars}+ estrellas`}
-                  onClear={() => {
-                    setMinStars("");
-                    navigate({ minStars: undefined });
-                  }}
-                />
-              ) : null}
-              {hrefState.onSaleOnly ? (
-                <ActiveChip
-                  label="Solo ofertas"
-                  onClear={() => {
-                    setOnSaleOnly(false);
-                    navigate({ onSaleOnly: undefined });
-                  }}
-                />
-              ) : null}
-              {hrefState.onlineOnly ? (
-                <ActiveChip
-                  label="Solo pago online"
-                  onClear={() => {
-                    setOnlineOnly(false);
-                    navigate({ onlineOnly: undefined });
-                  }}
-                />
-              ) : null}
-              {hrefState.sortBy && hrefState.sortBy !== "recent" ? (
-                <ActiveChip
-                  label={
-                    hrefState.sortBy === "price_asc"
-                      ? "Menor precio"
-                      : hrefState.sortBy === "price_desc"
-                        ? "Mayor precio"
-                        : "Mejor calificados"
-                  }
-                  onClear={() => {
-                    setSortBy("recent");
-                    navigate({ sortBy: undefined });
-                  }}
-                />
-              ) : null}
-
+              <span className="text-slate-400 text-xs">-</span>
+              <input
+                className="h-10 w-full rounded-2xl border border-slate-200 bg-white px-3 text-xs text-slate-900 outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
+                inputMode="decimal"
+                min="0"
+                onChange={(event) => setMaxPrice(event.target.value)}
+                placeholder="Máximo"
+                type="number"
+                value={maxPrice}
+              />
               <button
-                className={cn(buttonVariants({ variant: "secondary" }), "h-9 rounded-full px-4 text-sm")}
-                onClick={resetAdvancedFilters}
-                type="button"
+                type="submit"
+                className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-3 h-10 text-xs font-bold transition shadow-sm"
               >
-                Limpiar filtros
+                Ir
               </button>
             </div>
-          ) : null}
-
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-            <span>{isPending ? "Actualizando resultados..." : "La búsqueda se aplica al presionar Enter."}</span>
-            {hasAdvanced ? (
-              <Link
-                className="font-semibold text-slate-600 underline-offset-2 hover:text-slate-950 hover:underline"
-                href={clearAdvancedHref}
-              >
-                Volver a filtros básicos
-              </Link>
-            ) : null}
           </div>
+
+          {/* 5. FILTROS RÁPIDOS */}
+          <div className="space-y-3 border-t border-slate-100 pt-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+              Opciones
+            </h3>
+            <div className="flex flex-col gap-2.5">
+              <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={onSaleOnly}
+                  onChange={(e) => {
+                    setOnSaleOnly(e.target.checked);
+                    navigate({ onSaleOnly: e.target.checked ? true : undefined });
+                  }}
+                  className="rounded text-brand focus:ring-brand h-4 w-4 border-slate-300"
+                />
+                Solo ofertas
+              </label>
+              <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={onlineOnly}
+                  onChange={(e) => {
+                    setOnlineOnly(e.target.checked);
+                    navigate({ onlineOnly: e.target.checked ? true : undefined });
+                  }}
+                  className="rounded text-brand focus:ring-brand h-4 w-4 border-slate-300"
+                />
+                Solo pago online
+              </label>
+            </div>
+          </div>
+
+          {/* 6. CALIFICACIÓN (ESTRELLAS DE AMAZON) */}
+          <div className="space-y-2 border-t border-slate-100 pt-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+              Calificación promedio
+            </h3>
+            <div className="flex flex-col gap-1.5">
+              {([5, 4, 3, 2, 1] as const).map((stars) => {
+                const isActive = minStars === String(stars);
+                return (
+                  <button
+                    key={stars}
+                    type="button"
+                    onClick={() => {
+                      const nextValue = isActive ? "" : String(stars);
+                      setMinStars(nextValue);
+                      navigate({ minStars: nextValue ? Number(nextValue) : undefined });
+                    }}
+                    className="flex items-center gap-1 hover:opacity-80 transition text-left"
+                  >
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map((index) => (
+                        <Star
+                          key={index}
+                          className={cn(
+                            "h-3.5 w-3.5",
+                            index <= stars
+                              ? "fill-amber-400 text-amber-400"
+                              : "text-slate-200 fill-slate-200"
+                          )}
+                        />
+                      ))}
+                    </div>
+                    {stars < 5 && (
+                      <span
+                        className={cn(
+                          "text-[10px] font-bold ml-1",
+                          isActive ? "text-brand" : "text-slate-500"
+                        )}
+                      >
+                        o más
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 7. FILTROS ACTIVOS */}
+          {(hasAdvanced || hrefState.search?.trim()) && (
+            <div className="space-y-2 border-t border-slate-100 pt-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                  Filtros activos
+                </h3>
+                <button
+                  onClick={resetAdvancedFilters}
+                  type="button"
+                  className="text-[10px] font-extrabold uppercase text-brand hover:underline"
+                >
+                  Limpiar todos
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {hrefState.search?.trim() && (
+                  <ActiveChip
+                    label={`Busca: ${hrefState.search}`}
+                    onClear={() => {
+                      setSearch("");
+                      navigate({ search: undefined });
+                    }}
+                  />
+                )}
+                {hrefState.minPrice != null && (
+                  <ActiveChip
+                    label={`Min: ${hrefState.minPrice}`}
+                    onClear={() => {
+                      setMinPrice("");
+                      navigate({ minPrice: undefined });
+                    }}
+                  />
+                )}
+                {hrefState.maxPrice != null && (
+                  <ActiveChip
+                    label={`Max: ${hrefState.maxPrice}`}
+                    onClear={() => {
+                      setMaxPrice("");
+                      navigate({ maxPrice: undefined });
+                    }}
+                  />
+                )}
+                {hrefState.minStars != null && (
+                  <ActiveChip
+                    label={`${hrefState.minStars}★ o más`}
+                    onClear={() => {
+                      setMinStars("");
+                      navigate({ minStars: undefined });
+                    }}
+                  />
+                )}
+                {hrefState.onSaleOnly && (
+                  <ActiveChip
+                    label="Ofertas"
+                    onClear={() => {
+                      setOnSaleOnly(false);
+                      navigate({ onSaleOnly: undefined });
+                    }}
+                  />
+                )}
+                {hrefState.onlineOnly && (
+                  <ActiveChip
+                    label="Online"
+                    onClear={() => {
+                      setOnlineOnly(false);
+                      navigate({ onlineOnly: undefined });
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Estado de carga */}
+          {isPending && (
+            <p className="text-[10px] text-brand font-bold animate-pulse text-center">
+              Actualizando catálogo...
+            </p>
+          )}
 
           <button className="sr-only" type="submit">
             Buscar
           </button>
         </form>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-function ToggleChip({
-  active,
-  icon,
-  label,
-  onClick,
-}: Readonly<{
-  active: boolean;
-  icon?: React.ReactNode;
-  label: string;
-  onClick: () => void;
-}>) {
-  return (
-    <button
-      className={cn(
-        "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition",
-        active
-          ? "border-brand bg-brand text-white shadow-sm"
-          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
+      {/* Info Contexto de País en Barra */}
+      {activeCountryName ? (
+        <div className="mt-3 rounded-2xl bg-blue-50/50 border border-blue-100 p-3 text-center text-xs text-slate-600">
+          Mostrando productos de <strong className="text-slate-900">{activeCountryName}</strong>.{" "}
+          <Link
+            className="font-bold text-brand hover:underline"
+            href={toMarketplaceHref({
+              ...hrefState,
+              countrySlug: undefined,
+            })}
+          >
+            Ver todos los países
+          </Link>
+        </div>
+      ) : (
+        <div className="mt-3 rounded-2xl bg-slate-50 border border-slate-200/60 p-3 text-center text-xs text-slate-500">
+          País: Elige uno en la barra superior para acotar tu región.
+        </div>
       )}
-      onClick={onClick}
-      type="button"
-    >
-      {icon}
-      {label}
-    </button>
+
+    </div>
   );
 }
 
@@ -422,66 +499,15 @@ function ActiveChip({
   onClear: () => void;
 }>) {
   return (
-    <button
-      className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700"
-      onClick={onClear}
-      type="button"
-    >
-      <span>{label}</span>
-      <X aria-hidden className="h-3.5 w-3.5" />
-    </button>
+    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-200 pl-2 pr-1 py-0.5 text-[10px] font-bold text-slate-700">
+      {label}
+      <button
+        onClick={onClear}
+        type="button"
+        className="rounded-full hover:bg-slate-200 p-0.5 transition text-slate-400 hover:text-slate-900"
+      >
+        <X className="h-2.5 w-2.5" />
+      </button>
+    </span>
   );
 }
-
-function FiltersHeader({
-  activeCountryName,
-  hrefState,
-}: Readonly<{
-  hrefState: MarketplaceHrefValues;
-  activeCountryName?: string;
-}>) {
-  return (
-    <div className="flex flex-col gap-3 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5">
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-          Filtros
-        </p>
-        <p className="mt-1 text-sm text-slate-600">
-          Búsqueda, precio, calificación por estrellas y ofertas. Se combinan con
-          la categoría elegida arriba y el país en la barra superior.
-        </p>
-      </div>
-      {activeCountryName ? (
-        <p className="text-sm text-slate-700 sm:text-right">
-          <span className="font-semibold text-slate-950">País:</span>{" "}
-          {activeCountryName}
-          <span className="mx-2 text-slate-300" aria-hidden="true">
-            ·
-          </span>
-          <Link
-            className="font-semibold text-brand underline-offset-2 hover:underline"
-            href={toMarketplaceHref({
-              categorySlug: hrefState.categorySlug,
-              search: hrefState.search,
-              countrySlug: undefined,
-              minPrice: hrefState.minPrice,
-              maxPrice: hrefState.maxPrice,
-              minStars: hrefState.minStars,
-              onSaleOnly: hrefState.onSaleOnly,
-              onlineOnly: hrefState.onlineOnly,
-              sortBy: hrefState.sortBy,
-            })}
-          >
-            Ver todos los países
-          </Link>
-        </p>
-      ) : (
-        <p className="max-w-sm text-sm text-slate-600 sm:text-right">
-          <span className="font-semibold text-slate-800">País:</span> elige uno
-          en la barra superior para acotar por región.
-        </p>
-      )}
-    </div>
-  );
-}
-
