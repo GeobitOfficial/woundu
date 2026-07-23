@@ -15,6 +15,7 @@ export { HomeProductCard } from "./HomeProductCard";
 export { HomeProductSection } from "./HomeProductSection";
 export { HomeProductCatalogSection } from "./HomeProductCatalogSection";
 export { HomeProductCarousel } from "./HomeProductCarousel";
+export { HomeCarousel } from "./HomeCarousel";
 export { ProductRatingStars } from "./ProductRatingStars";
 export { HomeProductGrid } from "./HomeProductGrid";
 export { HomeProductTile } from "./HomeProductTile";

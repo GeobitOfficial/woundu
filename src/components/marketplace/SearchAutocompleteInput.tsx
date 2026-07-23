@@ -159,7 +159,6 @@ export function SearchAutocompleteInput({
                       onClick={() => handleSelectSuggestion(item.slug)}
                       type="button"
                     >
-                      {/* Imagen / Thumbnail */}
                       <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
                         {item.imageUrl ? (
                           <img

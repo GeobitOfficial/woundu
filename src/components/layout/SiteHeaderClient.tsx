@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { Category } from "@/types/marketplace";
 import {
   Globe,
   Home,
@@ -28,6 +29,7 @@ import {
   CountryMarketplaceSelect,
   CountryMarketplaceSelectFallback,
 } from "./CountryMarketplaceSelect";
+import { HomeSearchBar } from "../marketplace/HomeSearchBar";
 
 type SiteHeaderClientProps = Readonly<{
   canPublish?: boolean;
@@ -57,7 +59,8 @@ export function SiteHeaderClient({
   isSuperAdmin = false,
   profileAvatarUrl = null,
   unreadCount = 0,
-}: SiteHeaderClientProps) {
+  categories = [],
+}: SiteHeaderClientProps & { categories?: ReadonlyArray<Category> }) {
   const pathname = usePathname();
   const isMarketplace =
     pathname === "/marketplace" || pathname.startsWith("/marketplace/");
@@ -66,7 +69,9 @@ export function SiteHeaderClient({
 
   return (
     <header className="sticky top-0 z-50 border-b border-brand-dark/40 bg-brand shadow-md shadow-brand-dark/25">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+      {/* FILA SUPERIOR: Logo + Buscador + Usuario */}
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        {/* LOGO */}
         <Link
           className="flex shrink-0 items-center rounded-md bg-white/95 px-2 py-1 outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/80"
           href="/"
@@ -81,37 +86,12 @@ export function SiteHeaderClient({
           />
         </Link>
 
-        <nav
-          aria-label="Navegacion principal"
-          className="hidden items-center gap-6 md:flex"
-        >
-          {NAV_ITEMS.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+        {/* BUSCADOR (Escritorio) */}
+        <div className="hidden flex-1 max-w-xl mx-4 md:block">
+          <HomeSearchBar size="default" />
+        </div>
 
-            return (
-              <HeaderNavLink
-                className={cn(
-                  headerLinkClass,
-                  isActive && "text-white underline decoration-2 underline-offset-4",
-                )}
-                href={item.href}
-                icon={NAV_ICONS[item.href]}
-                key={item.href}
-                label={item.label}
-              />
-            );
-          })}
-        </nav>
-
-        <Suspense
-          fallback={<CountryMarketplaceSelectFallback layout="desktop" />}
-        >
-          <CountryMarketplaceSelect layout="desktop" />
-        </Suspense>
-
+        {/* ACCIONES DE PERFIL / AUTH (Escritorio) */}
         <div className="hidden shrink-0 items-center gap-3 md:flex">
           {isLoggedIn ? (
             <>
@@ -150,6 +130,7 @@ export function SiteHeaderClient({
           ) : null}
         </div>
 
+        {/* MENÚ HAMBURGUESA (Móvil) */}
         <details className="relative md:hidden">
           <summary
             aria-label="Abrir menu de navegacion"
@@ -164,14 +145,24 @@ export function SiteHeaderClient({
               <CountryMarketplaceSelect layout="mobile" />
             </Suspense>
             <nav aria-label="Navegacion movil" className="mt-3 flex flex-col gap-1">
-              {NAV_ITEMS.map((item) => (
-                <MobileNavLink
-                  href={item.href}
-                  icon={NAV_ICONS[item.href]}
-                  key={item.href}
-                  label={item.label}
-                />
-              ))}
+              {NAV_ITEMS.map((item) => {
+                if (item.label === "Categorías") {
+                  return (
+                    <MobileNavCategoryLink
+                      categories={categories}
+                      key={item.href}
+                    />
+                  );
+                }
+                return (
+                  <MobileNavLink
+                    href={item.href}
+                    icon={NAV_ICONS[item.href]}
+                    key={item.href}
+                    label={item.label}
+                  />
+                );
+              })}
               <div className="my-2 border-t border-slate-100" />
               {isLoggedIn ? (
                 <>
@@ -222,6 +213,58 @@ export function SiteHeaderClient({
             </nav>
           </div>
         </details>
+      </div>
+
+      {/* FILA INFERIOR: Selector de País + Enlaces de Navegación (Solo Escritorio) */}
+      <div className="hidden border-t border-brand-dark/20 bg-brand-dark/10 md:block">
+        <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-6">
+            <Suspense
+              fallback={<CountryMarketplaceSelectFallback layout="desktop" />}
+            >
+              <CountryMarketplaceSelect layout="desktop" />
+            </Suspense>
+
+            <nav
+              aria-label="Navegacion principal"
+              className="flex items-center gap-6"
+            >
+              {NAV_ITEMS.map((item) => {
+                if (item.label === "Categorías") {
+                  return (
+                    <HeaderCategoriesDropdown
+                      categories={categories}
+                      key={item.href}
+                    />
+                  );
+                }
+
+                const isActive =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+                return (
+                  <HeaderNavLink
+                    className={cn(
+                      headerLinkClass,
+                      isActive && "text-white underline decoration-2 underline-offset-4",
+                    )}
+                    href={item.href}
+                    icon={NAV_ICONS[item.href]}
+                    key={item.href}
+                    label={item.label}
+                  />
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      {/* FILA INFERIOR MÓVIL: Buscador Dedicado */}
+      <div className="border-t border-brand-dark/15 bg-brand px-4 py-2 md:hidden">
+        <HomeSearchBar size="default" />
       </div>
     </header>
   );
@@ -301,5 +344,88 @@ function MobileNavLink({
       {Icon ? <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-brand" /> : null}
       {label}
     </Link>
+  );
+}
+
+function HeaderCategoriesDropdown({
+  categories,
+}: {
+  categories: ReadonlyArray<Category>;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <button
+        className={cn(
+          headerLinkClass,
+          "cursor-pointer outline-none focus-visible:underline decoration-2 underline-offset-4"
+        )}
+        type="button"
+      >
+        <LayoutGrid aria-hidden="true" className="h-4 w-4 shrink-0 text-white/95" />
+        Categorías
+      </button>
+
+      {isOpen && categories.length > 0 && (
+        <div className="absolute left-0 top-full z-50 mt-1 w-48 rounded-xl border border-slate-200 bg-white p-2 shadow-xl animate-in fade-in slide-in-from-top-1">
+          <ul className="space-y-1">
+            {categories.map((cat) => (
+              <li key={cat.id}>
+                <Link
+                  className="block rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-brand"
+                  href={`/marketplace?categoria=${cat.slug}`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {cat.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MobileNavCategoryLink({
+  categories,
+}: {
+  categories: ReadonlyArray<Category>;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="flex flex-col">
+      <button
+        className="inline-flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 outline-none"
+        onClick={() => setIsOpen(!isOpen)}
+        type="button"
+      >
+        <div className="inline-flex items-center gap-2">
+          <LayoutGrid aria-hidden="true" className="h-4 w-4 shrink-0 text-brand" />
+          <span>Categorías</span>
+        </div>
+        <span className="text-[10px] text-slate-400">{isOpen ? "▲" : "▼"}</span>
+      </button>
+
+      {isOpen && (
+        <div className="ml-6 mt-1 flex flex-col gap-1 border-l border-slate-100 pl-4">
+          {categories.map((cat) => (
+            <Link
+              className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+              href={`/marketplace?categoria=${cat.slug}`}
+              key={cat.id}
+            >
+              {cat.name}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
