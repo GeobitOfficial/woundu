@@ -167,6 +167,18 @@ export function ProductForm({
 
       setStatus(null);
 
+      const hasImages = isEdit
+        ? (existingImages.length > 0 || selectedImages.length > 0)
+        : selectedImages.length > 0;
+
+      if (!hasImages) {
+        setStatus({
+          type: "error",
+          message: "Debes subir al menos una foto para tu producto.",
+        });
+        return;
+      }
+
       setIsLoading(true);
 
 

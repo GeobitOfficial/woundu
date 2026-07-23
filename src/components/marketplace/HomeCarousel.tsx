@@ -83,7 +83,7 @@ export function HomeCarousel({ products }: HomeCarouselProps) {
                   {discount != null && (
                     <span className="rounded-md bg-brand px-2 py-0.5 text-[10px] font-bold text-slate-950 uppercase">
                       {discount}% OFF
-                        </span>
+                    </span>
                   )}
                 </div>
                 <Link
@@ -163,6 +163,7 @@ export function HomeCarousel({ products }: HomeCarouselProps) {
           ))}
         </div>
       )}
+
     </div>
   );
 }

@@ -96,9 +96,11 @@ export function ProductImageUpload({
     <div className="md:col-span-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-sm font-semibold text-slate-800">Imágenes</p>
+          <p className="text-sm font-semibold text-slate-800">
+            Imágenes <span className="text-red-500 font-bold">*</span>
+          </p>
           <p className="text-xs text-slate-500">
-            Sube hasta {MAX_PRODUCT_IMAGES} fotos. La primera será la principal.
+            Sube al menos 1 foto (máximo {MAX_PRODUCT_IMAGES}). La primera será la principal.
           </p>
         </div>
         {remainingSlots > 0 ? (
