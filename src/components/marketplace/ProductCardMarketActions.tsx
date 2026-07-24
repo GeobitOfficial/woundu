@@ -75,11 +75,12 @@ export function ProductCardMarketActions({
     title,
     productPageUrl,
   );
-  const showSellerPayoutPreview =
-    !compact &&
-    viewerId != null &&
-    !isOwnListing &&
-    sellerHasPayoutMethods(sellerPayout);
+  //const showSellerPayoutPreview =
+  //!compact &&
+  //viewerId != null &&
+  //!isOwnListing &&
+  //sellerHasPayoutMethods(sellerPayout);
+  const showSellerPayoutPreview = false;
   const showPaidShippingNotice =
     !compact && shippingType === "paid" && !isOwnListing;
   const showWhatsappButton =

@@ -103,7 +103,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   return (
     <main className="min-h-screen bg-[#eaeded]">
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
+      <div className="mx-auto max-w-[82rem] px-4 py-6 sm:px-6 lg:py-8">
         <nav aria-label="Ruta de navegacion" className="flex flex-wrap gap-2 text-sm">
           <Link className="font-semibold text-brand hover:underline" href="/marketplace">
             Marketplace
@@ -123,33 +123,39 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <span className="line-clamp-1 text-slate-600">{product.title}</span>
         </nav>
 
-        <article className="mt-6 overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
-          <div className="grid gap-0 lg:grid-cols-2">
-            <div className="border-b border-slate-100 bg-white p-4 sm:p-6 lg:border-b-0 lg:border-r">
+        <article className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Slot 1: Imágenes del producto (Izquierda) */}
+            <div className="lg:col-span-5">
               <ProductImageGallery images={product.images} title={product.title} />
             </div>
 
-            <div className="p-4 sm:p-6 lg:p-8">
-              {product.category ? (
-                <Link href={categoryHref}>
-                  <Badge className="w-fit transition hover:bg-brand-light" variant="brand">
-                    {product.category.name}
-                  </Badge>
-                </Link>
-              ) : null}
+            {/* Slot 2: Descripción y Características del producto (Centro) */}
+            <div className="lg:col-span-4 space-y-6">
+              <div>
+                {product.category ? (
+                  <Link href={categoryHref}>
+                    <Badge className="w-fit transition hover:bg-brand-light" variant="brand">
+                      {product.category.name}
+                    </Badge>
+                  </Link>
+                ) : null}
 
-              <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
-                {product.title}
-              </h1>
+                <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl leading-snug">
+                  {product.title}
+                </h1>
 
-              <div className="mt-4">
-                <ProductRatingStars
-                  ratingAverage={product.ratingAverage}
-                  reviewCount={product.reviewCount}
-                />
+                <div className="mt-4">
+                  <ProductRatingStars
+                    ratingAverage={product.ratingAverage}
+                    reviewCount={product.reviewCount}
+                  />
+                </div>
               </div>
 
-              <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
+              {/* Rango de Precios en el Centro */}
+              <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
                 {product.isOnOffer && product.compareAtPrice != null ? (
                   <p className="text-sm text-slate-400 line-through">
                     {formatProductPrice(product.compareAtPrice, product.currency)}
@@ -164,91 +170,126 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 ) : null}
               </div>
 
-              <dl className="mt-5 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
-                <div>
-                  <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                    Condicion
-                  </dt>
-                  <dd className="mt-1 font-semibold">
-                    {getConditionLabel(product.condition)}
-                  </dd>
-                </div>
-                {location ? (
+              {/* Características Clave */}
+              <div className="border-t border-slate-100 pt-6">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-3">
+                  Especificaciones
+                </h3>
+                <dl className="grid gap-4 text-xs text-slate-700 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                      Ubicacion
-                    </dt>
-                    <dd className="mt-1 inline-flex items-center gap-1 font-semibold">
-                      <MapPin aria-hidden className="h-4 w-4 text-brand" />
-                      {location}
+                    <dt className="font-bold text-slate-500 uppercase">Condición</dt>
+                    <dd className="mt-1 font-semibold text-slate-900">
+                      {getConditionLabel(product.condition)}
                     </dd>
                   </div>
-                ) : null}
+                  {location ? (
+                    <div>
+                      <dt className="font-bold text-slate-500 uppercase">Ubicación</dt>
+                      <dd className="mt-1 inline-flex items-center gap-1 font-semibold text-slate-900">
+                        <MapPin aria-hidden className="h-3.5 w-3.5 text-brand" />
+                        {location}
+                      </dd>
+                    </div>
+                  ) : null}
+                  <div>
+                    <dt className="font-bold text-slate-500 uppercase">Moneda</dt>
+                    <dd className="mt-1 font-semibold text-slate-900">{product.currency}</dd>
+                  </div>
+                  {product.isOnOffer ? (
+                    <div>
+                      <dt className="font-bold text-slate-500 uppercase">Promoción</dt>
+                      <dd className="mt-1 font-semibold text-brand">Oferta activa</dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </div>
+
+              {/* Descripción Detallada */}
+              <div className="border-t border-slate-100 pt-6">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-3">
+                  Descripción
+                </h3>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
+                  {product.description}
+                </p>
+              </div>
+            </div>
+
+            {/* Slot 3: Compra y Checkout (Derecha - Sticky) */}
+            <div className="lg:col-span-3 lg:sticky lg:top-24 rounded-2xl border border-slate-200 bg-slate-50/50 p-5 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  Comprar nuevo
+                </span>
+                <p className="text-2xl font-black text-slate-950">{priceLabel}</p>
+                {product.isOnOffer && product.compareAtPrice != null && (
+                  <p className="text-xs text-slate-400 line-through">
+                    Reg: {formatProductPrice(product.compareAtPrice, product.currency)}
+                  </p>
+                )}
+              </div>
+
+              {/* Envío y Disponibilidad */}
+              <div className="space-y-2 border-t border-slate-100 pt-4 text-xs">
                 <div>
-                  <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                    Disponibilidad
-                  </dt>
-                  <dd
-                    className={`mt-1 font-semibold ${
+                  <span className="font-bold text-slate-500">Entrega: </span>
+                  {product.shippingType === "free" ? (
+                    <span className="text-emerald-700 font-extrabold">Envío GRATIS</span>
+                  ) : (
+                    <span className="text-slate-700 font-semibold">Envío a acordar</span>
+                  )}
+                </div>
+
+                {location && (
+                  <div className="flex items-start gap-1 text-[11px] text-slate-600">
+                    <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+                    <span>Llega a: <strong className="text-slate-800">{location}</strong></span>
+                  </div>
+                )}
+
+                <div className="border-t border-slate-100 pt-3">
+                  <span className="font-bold text-slate-500">Disponibilidad: </span>
+                  <strong
+                    className={
                       isProductInStock(product.stock)
                         ? product.stock <= 5
                           ? "text-amber-700"
                           : "text-emerald-700"
                         : "text-red-700"
-                    }`}
+                    }
                   >
                     {getProductStockLabel(product.stock)}
-                  </dd>
+                  </strong>
                 </div>
-                <div>
-                  <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                    Moneda
-                  </dt>
-                  <dd className="mt-1 font-semibold">{product.currency}</dd>
-                </div>
-                {product.isOnOffer ? (
-                  <div>
-                    <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                      Promocion
-                    </dt>
-                    <dd className="mt-1 font-semibold text-brand">Oferta activa</dd>
-                  </div>
-                ) : null}
-              </dl>
+              </div>
 
-              <ProductCardMarketActions
-                buyerShippingComplete={buyerPurchaseContext.shippingComplete}
-                initialFavorited={favorited}
-                isBuyer={buyerPurchaseContext.isBuyer}
-                loginNextHref={productHref}
-                priceLabel={priceLabel}
-                productId={product.id}
-                productPageUrl={productHref}
-                productSlug={product.slug}
-                sellerId={product.sellerId}
-                sellerPayout={sellerPayout}
-                sellerWhatsapp={product.seller?.whatsapp ?? null}
-                sellerIsAdmin={sellerIsAdmin}
-                shippingType={product.shippingType}
-                stock={product.stock}
-                title={product.title}
-                viewerId={user?.id ?? null}
-              />
+              {/* Acciones de Compra y Contacto */}
+              <div className="border-t border-slate-100 pt-4">
+                <ProductCardMarketActions
+                  buyerShippingComplete={buyerPurchaseContext.shippingComplete}
+                  initialFavorited={favorited}
+                  isBuyer={buyerPurchaseContext.isBuyer}
+                  loginNextHref={productHref}
+                  priceLabel={priceLabel}
+                  productId={product.id}
+                  productPageUrl={productHref}
+                  productSlug={product.slug}
+                  sellerId={product.sellerId}
+                  sellerPayout={sellerPayout}
+                  sellerWhatsapp={product.seller?.whatsapp ?? null}
+                  sellerIsAdmin={sellerIsAdmin}
+                  shippingType={product.shippingType}
+                  stock={product.stock}
+                  title={product.title}
+                  viewerId={user?.id ?? null}
+                />
+              </div>
 
-              <p className="mt-4 text-xs leading-5 text-slate-500">
-                El pago es directo al vendedor (transferencia u otro medio acordado).
-                Woundu no procesa pagos en linea.
+              <p className="text-[10px] leading-relaxed text-slate-400 text-center border-t border-slate-100 pt-3">
+                El pago es directo al vendedor. Woundu no procesa pagos en línea directamente.
               </p>
             </div>
-          </div>
 
-          <div className="border-t border-slate-100 p-4 sm:p-6 lg:p-8">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">
-              Descripcion
-            </h2>
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700 sm:text-base">
-              {product.description}
-            </p>
           </div>
         </article>
 

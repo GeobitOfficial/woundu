@@ -11,7 +11,6 @@ import {
   toMarketplaceHref,
   type MarketplaceHrefValues,
 } from "@/lib/marketplaceFilters";
-import { SearchAutocompleteInput } from "./SearchAutocompleteInput";
 import type { Category } from "@/types";
 
 type MarketplaceFiltersPanelProps = Readonly<{
