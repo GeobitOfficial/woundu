@@ -117,6 +117,28 @@ export function ProductForm({
 
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
+  const [selectedCategory, setSelectedCategory] = useState(product?.categoryId ?? "");
+
+  const initialSpecs = useMemo(() => {
+    if (product?.specifications && Array.isArray(product.specifications)) {
+      return product.specifications.map((spec: any) => ({
+        key: String(spec.key || ""),
+        value: String(spec.value || ""),
+      }));
+    }
+    return [];
+  }, [product?.specifications]);
+
+  const [specifications, setSpecifications] = useState<{ key: string; value: string }[]>(initialSpecs);
+
+  const CATEGORY_SPEC_PRESETS: Record<string, string[]> = {
+    tecnologia: ["Marca", "Modelo", "Memoria RAM", "Almacenamiento", "Procesador", "Sistema Operativo"],
+    hogar: ["Marca", "Modelo", "Material", "Dimensiones", "Color"],
+    moda: ["Marca", "Talla", "Material", "Género", "Color"],
+    servicios: ["Tipo de servicio", "Modalidad (Online/Presencial)", "Duración", "Experiencia requerida"],
+    default: ["Marca", "Modelo"],
+  };
+
 
 
   const productCurrency = useProductCountryCurrency(selectedCountry);
@@ -156,6 +178,10 @@ export function ProductForm({
       country: selectedCountry || String(formData.get("country") ?? ""),
 
       shippingType,
+
+      specifications: specifications.filter(
+        (spec) => spec.key.trim() !== "" && spec.value.trim() !== ""
+      ),
 
     };
 
@@ -449,9 +475,22 @@ export function ProductForm({
 
             className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 shadow-sm shadow-slate-950/5 transition focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15"
 
-            defaultValue={product?.categoryId ?? ""}
+            value={selectedCategory}
 
             name="categoryId"
+
+            onChange={(e) => {
+              const catId = e.target.value;
+              setSelectedCategory(catId);
+              const category = categories.find((cat) => cat.id === catId);
+              if (category) {
+                const slug = category.slug.toLowerCase();
+                const presets = CATEGORY_SPEC_PRESETS[slug] || CATEGORY_SPEC_PRESETS.default;
+                setSpecifications(presets.map((key) => ({ key, value: "" })));
+              } else {
+                setSpecifications([]);
+              }
+            }}
 
           >
 
@@ -693,6 +732,92 @@ export function ProductForm({
         />
 
 
+
+        {/* ESPECIFICACIONES DINÁMICAS */}
+        <div className="md:col-span-2 space-y-4 border-t border-slate-100 pt-6">
+          <div>
+            <h3 className="text-sm font-bold text-slate-800">
+              Especificaciones detalladas
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Agrega detalles técnicos del producto (ej: Marca, Modelo, Capacidad) para ayudar a los compradores.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {specifications.map((spec, index) => (
+              <div key={index} className="flex gap-3 items-center">
+                <input
+                  type="text"
+                  placeholder="Característica (ej: Marca)"
+                  value={spec.key}
+                  onChange={(e) => {
+                    const newSpecs = [...specifications];
+                    newSpecs[index].key = e.target.value;
+                    setSpecifications(newSpecs);
+                  }}
+                  className="h-11 w-1/3 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15"
+                />
+                <input
+                  type="text"
+                  placeholder="Valor (ej: Intel Core 5)"
+                  value={spec.value}
+                  onChange={(e) => {
+                    const newSpecs = [...specifications];
+                    newSpecs[index].value = e.target.value;
+                    setSpecifications(newSpecs);
+                  }}
+                  className="h-11 w-2/3 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSpecifications(specifications.filter((_, i) => i !== index));
+                  }}
+                  className="rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 p-2.5 transition shrink-0"
+                  title="Eliminar fila"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => {
+                setSpecifications([...specifications, { key: "", value: "" }]);
+              }}
+              className="mt-2 inline-flex items-center gap-1.5 rounded-xl border border-brand bg-brand/5 hover:bg-brand/10 text-brand px-4 py-2 text-xs font-bold transition shadow-sm"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Agregar característica
+            </button>
+          </div>
+        </div>
 
         <label className="space-y-2 md:col-span-2">
 

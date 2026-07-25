@@ -213,6 +213,31 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                   {product.description}
                 </p>
               </div>
+
+              {/* Especificaciones Detalladas (Tabla Clave-Valor) */}
+              {product.specifications && product.specifications.length > 0 ? (
+                <div className="border-t border-slate-100 pt-6">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-3">
+                    Especificaciones detalladas
+                  </h3>
+                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                    <table className="min-w-full divide-y divide-slate-150">
+                      <tbody className="divide-y divide-slate-100">
+                        {product.specifications.map((spec, i) => (
+                          <tr key={i} className="odd:bg-white even:bg-slate-50/50">
+                            <td className="w-1/3 py-2.5 px-4 text-xs font-bold text-slate-500 uppercase tracking-wide">
+                              {spec.key}
+                            </td>
+                            <td className="w-2/3 py-2.5 px-4 text-xs font-semibold text-slate-800">
+                              {spec.value}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             {/* Slot 3: Compra y Checkout (Derecha - Sticky) */}

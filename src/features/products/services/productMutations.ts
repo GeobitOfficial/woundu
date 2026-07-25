@@ -137,6 +137,8 @@ export async function createProduct(
 
       published_at: null,
 
+      specifications: values.specifications ?? [],
+
     })
 
     .select("id, slug")
@@ -252,6 +254,8 @@ export async function updateProduct(
       stock: values.stock,
 
       shipping_type: values.shippingType,
+
+      specifications: values.specifications ?? [],
 
     })
 

@@ -69,6 +69,14 @@ export const createProductSchema = z
     shippingType: z.enum(["free", "paid"], {
       error: "Selecciona el tipo de envio.",
     }),
+    specifications: z
+      .array(
+        z.object({
+          key: z.string().trim().min(1, "El nombre de la característica no puede estar vacío."),
+          value: z.string().trim().min(1, "El valor de la característica no puede estar vacío."),
+        }),
+      )
+      .optional(),
   })
   .superRefine((data, ctx) => {
     if (data.isOnOffer && data.compareAtPrice == null) {

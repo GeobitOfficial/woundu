@@ -30,7 +30,7 @@ export function LandingHero({
   snapshot,
   topRatedProducts,
 }: LandingHeroProps) {
-  // Tomamos hasta 5 productos para el carrusel superior
+  // solo 5 productos para aparecer en el carrusel
   const carouselProducts = catalogProducts.slice(0, 5);
 
   // Fallbacks de productos para asegurar que las 6 tarjetas siempre estén llenas
@@ -50,7 +50,7 @@ export function LandingHero({
       <div className="relative -mt-14 md:-mt-20 z-20 w-full bg-gradient-to-b from-slate-950 via-blue-950 to-[#eaeded] pt-20 pb-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 items-stretch">
-            
+
             {/* Card 1: Última publicación */}
             {productCard1 ? (
               <div className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]">
