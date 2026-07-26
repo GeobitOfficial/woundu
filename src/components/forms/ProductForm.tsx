@@ -161,6 +161,8 @@ export function ProductForm({
 
       description: String(formData.get("description") ?? ""),
 
+      longDescription: String(formData.get("longDescription") ?? ""),
+
       price: String(formData.get("price") ?? ""),
 
       isOnOffer,
@@ -821,7 +823,7 @@ export function ProductForm({
 
         <label className="space-y-2 md:col-span-2">
 
-          <span className="text-sm font-semibold text-slate-800">Descripcion</span>
+          <span className="text-sm font-semibold text-slate-800">Descripción corta</span>
 
           <textarea
 
@@ -833,13 +835,39 @@ export function ProductForm({
 
             name="description"
 
-            placeholder="Describe el estado, detalles y condiciones del producto."
+            placeholder="Describe brevemente el producto (se muestra en la parte superior al lado de las fotos)."
 
           />
 
           {errors.description ? (
 
             <p className="text-xs leading-5 text-red-600">{errors.description}</p>
+
+          ) : null}
+
+        </label>
+
+        <label className="space-y-2 md:col-span-2">
+
+          <span className="text-sm font-semibold text-slate-800">Descripción detallada (larga)</span>
+
+          <textarea
+
+            aria-invalid={Boolean(errors.longDescription)}
+
+            className="min-h-56 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm shadow-slate-950/5 transition placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15"
+
+            defaultValue={product?.longDescription ?? ""}
+
+            name="longDescription"
+
+            placeholder="Escribe la descripción larga y detallada del producto (se muestra al final de la página)."
+
+          />
+
+          {errors.longDescription ? (
+
+            <p className="text-xs leading-5 text-red-600">{errors.longDescription}</p>
 
           ) : null}
 
@@ -930,6 +958,8 @@ function getProductErrors(error: ZodError): ProductFormErrors {
       field === "title" ||
 
       field === "description" ||
+
+      field === "longDescription" ||
 
       field === "price" ||
 

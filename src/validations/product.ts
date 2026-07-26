@@ -43,6 +43,11 @@ export const createProductSchema = z
       .trim()
       .min(10, "La descripcion debe tener al menos 10 caracteres.")
       .max(3000, "La descripcion no puede superar 3000 caracteres."),
+    longDescription: z
+      .string()
+      .trim()
+      .max(5000, "La descripción detallada no puede superar 5000 caracteres.")
+      .optional(),
     price: z.coerce
       .number({ error: "Ingresa un precio valido." })
       .min(0, "El precio no puede ser negativo."),

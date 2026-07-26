@@ -88,6 +88,7 @@ export type Product = Readonly<{
   updatedAt: string;
   deletedAt: string | null;
   specifications?: ReadonlyArray<{ key: string; value: string }> | null;
+  longDescription?: string | null;
 }>;
 export type ProductImage = Readonly<{
   id: string;

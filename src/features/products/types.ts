@@ -99,6 +99,7 @@ export type ProductListRow = Readonly<{
   updated_at: string;
   deleted_at: string | null;
   specifications: any;
+  long_description: string | null;
   categories: CategoryRow | CategoryRow[] | null;
   product_images: ProductImageRow[] | null;
   profiles: SellerRow | SellerRow[] | null;

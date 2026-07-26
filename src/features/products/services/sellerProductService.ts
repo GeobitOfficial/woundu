@@ -23,6 +23,7 @@ export type SellerProductEditRecord = Readonly<{
   id: string;
   title: string;
   description: string;
+  longDescription: string | null;
   price: number;
   compareAtPrice: number | null;
   isOnOffer: boolean;
@@ -34,6 +35,7 @@ export type SellerProductEditRecord = Readonly<{
   status: ProductStatus;
   stock: number;
   shippingType: "free" | "paid";
+  specifications: ReadonlyArray<{ key: string; value: string }> | null;
 }>;
 
 type SellerProductListRow = {
@@ -74,6 +76,7 @@ type SellerProductEditRow = {
   id: string;
   title: string;
   description: string;
+  long_description: string | null;
   price: string | number;
   compare_at_price: string | number | null;
   is_on_offer: boolean;
@@ -85,6 +88,7 @@ type SellerProductEditRow = {
   status: ProductStatus;
   stock: number;
   shipping_type?: "free" | "paid";
+  specifications: any;
 };
 
 const SELLER_PRODUCTS_SELECT = `
@@ -189,7 +193,7 @@ export async function getSellerProductForEdit(
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, title, description, price, compare_at_price, is_on_offer, currency, country, city, category_id, condition, status, stock, shipping_type",
+      "id, title, description, long_description, price, compare_at_price, is_on_offer, currency, country, city, category_id, condition, status, stock, shipping_type, specifications",
     )
     .eq("id", productId)
     .eq("seller_id", sellerId)
@@ -206,6 +210,7 @@ export async function getSellerProductForEdit(
     id: row.id,
     title: row.title,
     description: row.description,
+    longDescription: row.long_description,
     price: toNumber(row.price),
     compareAtPrice:
       row.compare_at_price != null ? toNumber(row.compare_at_price) : null,
@@ -218,5 +223,6 @@ export async function getSellerProductForEdit(
     status: row.status,
     stock: Number(row.stock ?? 0),
     shippingType: row.shipping_type ?? "free",
+    specifications: row.specifications,
   };
 }

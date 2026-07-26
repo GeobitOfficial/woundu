@@ -207,7 +207,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               {/* Descripción Detallada */}
               <div className="border-t border-slate-100 pt-6">
                 <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-3">
-                  Descripción
+                  Descripción corta
                 </h3>
                 <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
                   {product.description}
@@ -317,6 +317,16 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
           </div>
         </article>
+
+        {/* Descripción Detallada (Larga) */}
+        {product.longDescription ? (
+          <div className="mt-6 bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+            <h2 className="text-lg font-black text-slate-900 mb-4">Descripción</h2>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
+              {product.longDescription}
+            </p>
+          </div>
+        ) : null}
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
           {product.seller ? <ProductSellerCard seller={product.seller} /> : null}

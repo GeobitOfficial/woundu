@@ -139,6 +139,8 @@ export async function createProduct(
 
       specifications: values.specifications ?? [],
 
+      long_description: normalizeNullable(values.longDescription),
+
     })
 
     .select("id, slug")
@@ -256,6 +258,8 @@ export async function updateProduct(
       shipping_type: values.shippingType,
 
       specifications: values.specifications ?? [],
+
+      long_description: normalizeNullable(values.longDescription),
 
     })
 
