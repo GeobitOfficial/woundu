@@ -186,12 +186,16 @@ export function SellerPublicationsPanel({ sections }: SellerPublicationsPanelPro
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [viewMode, setViewMode] = useState<"grid" | "list">(() => {
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  useEffect(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("seller_view_mode") as "grid" | "list") || "grid";
+      const savedMode = localStorage.getItem("seller_view_mode") as "grid" | "list";
+      if (savedMode) {
+        setViewMode(savedMode);
+      }
     }
-    return "grid";
-  });
+  }, []);
 
   const toggleViewMode = (mode: "grid" | "list") => {
     setViewMode(mode);
