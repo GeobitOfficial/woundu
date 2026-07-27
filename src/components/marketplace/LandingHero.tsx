@@ -53,7 +53,10 @@ export function LandingHero({
 
             {/* Card 1: Última publicación */}
             {productCard1 ? (
-              <div className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]">
+              <Link
+                href={getProductMarketplaceHref(productCard1)}
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]"
+              >
                 <div>
                   <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
                     Último agregado
@@ -72,14 +75,11 @@ export function LandingHero({
                   <p className="text-sm font-black text-slate-950">
                     {formatProductPrice(productCard1.price, productCard1.currency)}
                   </p>
-                  <Link
-                    className="mt-2 block text-[11px] font-bold text-brand hover:underline"
-                    href={getProductMarketplaceHref(productCard1)}
-                  >
-                    Ver publicación
-                  </Link>
+                  <span className="mt-2 block text-[11px] font-bold text-brand group-hover:underline">
+                    Ver producto
+                  </span>
                 </div>
-              </div>
+              </Link>
             ) : null}
 
             {/* Card 2: Ofertas rápidas */}
@@ -124,7 +124,10 @@ export function LandingHero({
 
             {/* Card 3: Destacado hoy */}
             {productCard3 ? (
-              <div className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]">
+              <Link
+                href={getProductMarketplaceHref(productCard3)}
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]"
+              >
                 <div>
                   <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
                     Destacado hoy
@@ -143,19 +146,19 @@ export function LandingHero({
                   <p className="text-sm font-black text-slate-950 mb-2">
                     {formatProductPrice(productCard3.price, productCard3.currency)}
                   </p>
-                  <Link
-                    className="block w-full rounded-xl bg-brand py-1.5 text-center text-[10px] font-black text-slate-950 transition hover:bg-brand-hover shadow-sm"
-                    href={getProductMarketplaceHref(productCard3)}
-                  >
+                  <div className="block w-full rounded-xl bg-brand py-1.5 text-center text-[10px] font-black text-slate-950 transition group-hover:bg-brand-hover shadow-sm">
                     Sigue viendo
-                  </Link>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ) : null}
 
             {/* Card 4: Recomendación */}
             {productCard4 ? (
-              <div className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]">
+              <Link
+                href={getProductMarketplaceHref(productCard4)}
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]"
+              >
                 <div>
                   <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
                     Recomendado
@@ -174,19 +177,19 @@ export function LandingHero({
                   <p className="text-sm font-black text-slate-950">
                     {formatProductPrice(productCard4.price, productCard4.currency)}
                   </p>
-                  <Link
-                    className="mt-2 block text-[11px] font-bold text-brand hover:underline"
-                    href={getProductMarketplaceHref(productCard4)}
-                  >
+                  <span className="mt-2 block text-[11px] font-bold text-brand group-hover:underline">
                     Ver sugerencia
-                  </Link>
+                  </span>
                 </div>
-              </div>
+              </Link>
             ) : null}
 
             {/* Card 5: Bajo presupuesto */}
             {productCard5 ? (
-              <div className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]">
+              <Link
+                href={getProductMarketplaceHref(productCard5)}
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]"
+              >
                 <div>
                   <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
                     Bajo presupuesto
@@ -205,19 +208,19 @@ export function LandingHero({
                   <p className="text-sm font-black text-slate-950">
                     {formatProductPrice(productCard5.price, productCard5.currency)}
                   </p>
-                  <Link
-                    className="mt-2 block text-[11px] font-bold text-brand hover:underline"
-                    href="/marketplace?max_precio=50000"
-                  >
+                  <span className="mt-2 block text-[11px] font-bold text-brand group-hover:underline">
                     Por menos de $50k
-                  </Link>
+                  </span>
                 </div>
-              </div>
+              </Link>
             ) : null}
 
             {/* Card 6: Más vendidos / Valorados */}
             {productCard6 ? (
-              <div className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]">
+              <Link
+                href={getProductMarketplaceHref(productCard6)}
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]"
+              >
                 <div>
                   <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
                     Más valorados
@@ -239,14 +242,11 @@ export function LandingHero({
                       reviewCount={productCard6.reviewCount}
                     />
                   </div>
-                  <Link
-                    className="mt-1 block text-[11px] font-bold text-brand hover:underline"
-                    href="/marketplace?orden=rating"
-                  >
-                    Ver tendencias
-                  </Link>
+                  <span className="mt-1 block text-[11px] font-bold text-brand group-hover:underline">
+                    Ver producto
+                  </span>
                 </div>
-              </div>
+              </Link>
             ) : null}
 
           </div>

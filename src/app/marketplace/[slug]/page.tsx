@@ -66,7 +66,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   const user = await getAuthenticatedUser();
   const supabase = await createSupabaseServerClient();
-  const [favorited, sellerPayout, reviews, buyerPurchaseContext, relatedProducts] = await Promise.all([
+  const [favorited, sellerPayout, reviews, buyerPurchaseContext, relatedProducts, sellerRelatedProducts] = await Promise.all([
     user && supabase
       ? listFavoriteProductIdsForUser(supabase, user.id).then((ids) =>
           ids.includes(product.id),
@@ -79,6 +79,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       : Promise.resolve({ isBuyer: false, shippingComplete: false }),
     product.category?.slug
       ? getMarketplaceProducts({ categorySlug: product.category.slug })
+      : Promise.resolve([]),
+    product.category?.slug
+      ? getMarketplaceProducts({
+          categorySlug: product.category.slug,
+          sellerId: product.sellerId,
+        })
       : Promise.resolve([]),
   ]);
 
@@ -97,8 +103,11 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const categoryHref = product.category
     ? `/marketplace?categoria=${encodeURIComponent(product.category.slug)}`
     : "/marketplace";
-  const relatedVisible = relatedProducts
+  const sellerRelatedVisible = sellerRelatedProducts
     .filter((candidate) => candidate.id !== product.id)
+    .slice(0, 5);
+  const relatedVisible = relatedProducts
+    .filter((candidate) => candidate.id !== product.id && candidate.sellerId !== product.sellerId)
     .slice(0, 5);
 
   return (
@@ -378,6 +387,30 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             reviews={reviews}
           />
         </div>
+
+        {sellerRelatedVisible.length > 0 ? (
+          <section className="mt-6 space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-slate-950">Otros productos del vendedor</h2>
+                <p className="text-sm text-slate-600">
+                  Más publicaciones de {product.seller?.fullName || "este vendedor"} en esta misma categoría.
+                </p>
+              </div>
+            </div>
+
+            <MarketplaceProductGrid
+              buyerPurchaseContext={buyerPurchaseContext}
+              favoriteProductIds={favorited ? [product.id] : []}
+              hrefState={{ categorySlug: product.category?.slug }}
+              page={1}
+              products={sellerRelatedVisible}
+              totalPages={1}
+              totalProducts={sellerRelatedVisible.length}
+              viewerId={user?.id ?? null}
+            />
+          </section>
+        ) : null}
 
         {relatedVisible.length > 0 ? (
           <section className="mt-6 space-y-4">

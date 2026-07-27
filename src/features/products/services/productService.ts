@@ -470,6 +470,10 @@ export async function getMarketplaceProducts(
     query = query.eq("category_id", categoryId);
   }
 
+  if (filters.sellerId) {
+    query = query.eq("seller_id", filters.sellerId);
+  }
+
   if (country) {
     query = query.eq("country", country);
   }

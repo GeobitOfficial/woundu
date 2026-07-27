@@ -28,6 +28,7 @@ export type ProductCardItem = Product &
 
 export type MarketplaceProductFilters = Readonly<{
   categorySlug?: string;
+  sellerId?: string;
   search?: string;
   /** Nombre de país canónico (igual que en publicación / constante regional). */
   country?: string;
