@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Tag } from "lucide-react";
+import { MapPin, Star, Tag } from "lucide-react";
+import { getAvatarUrl, getInitials } from "@/lib/avatars/getAvatarUrl";
 
 import { ProductCardMarketActions } from "@/components/marketplace/ProductCardMarketActions";
 import { ProductImageGallery } from "@/components/marketplace/ProductImageGallery";
 import { MarketplaceProductGrid } from "@/components/marketplace/MarketplaceProductGrid";
 import { ProductRatingStars } from "@/components/marketplace/ProductRatingStars";
 import { ProductReviewsSection } from "@/components/marketplace/ProductReviewsSection";
-import { ProductSellerCard } from "@/components/marketplace/ProductSellerCard";
 import { Badge } from "@/components/ui";
 import { getSellerPayoutProfileForUser } from "@/features/account/services/payoutReadService";
 import {
@@ -313,6 +313,49 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               <p className="text-[10px] leading-relaxed text-slate-400 text-center border-t border-slate-100 pt-3">
                 El pago es directo al vendedor. Woundu no procesa pagos en línea directamente.
               </p>
+
+              {/* Info del vendedor */}
+              {product.seller ? (
+                <div className="border-t border-slate-100 pt-4">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-2">
+                    Información del vendedor
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-brand-light/40">
+                      {product.seller.avatarUrl ? (
+                        <img
+                          alt=""
+                          className="h-full w-full object-cover"
+                          src={getAvatarUrl(product.seller.avatarUrl) ?? undefined}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-brand/10 text-xs font-black text-brand-dark">
+                          {getInitials(product.seller.fullName)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-slate-900 leading-tight">
+                        {product.seller.fullName}
+                      </p>
+                      <p className="text-[10px] text-slate-500">
+                        {product.seller.username ? `@${product.seller.username}` : "Vendedor en Woundu"}
+                      </p>
+                      {product.seller.reviewsCount > 0 ? (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Star className="h-3 w-3 fill-brand text-brand" />
+                          <span className="text-[10px] font-semibold text-slate-800">
+                            {product.seller.reputationScore.toFixed(1)}
+                          </span>
+                          <span className="text-[10px] text-slate-500">
+                            ({product.seller.reviewsCount})
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
           </div>
@@ -328,8 +371,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           </div>
         ) : null}
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-          {product.seller ? <ProductSellerCard seller={product.seller} /> : null}
+        <div className="mt-6 bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
           <ProductReviewsSection
             ratingAverage={product.ratingAverage}
             reviewCount={product.reviewCount}

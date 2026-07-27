@@ -81,6 +81,7 @@ export function OrderDetailPanel({ order }: OrderDetailPanelProps) {
   async function runAction(
     action: () => Promise<{ error: string | null }>,
     success: string,
+    triggerEmail = false,
   ) {
     setIsSaving(true);
     setStatusMessage(null);
@@ -90,12 +91,14 @@ export function OrderDetailPanel({ order }: OrderDetailPanelProps) {
       setStatusMessage(result.error);
       return;
     }
-    // Disparar correo de confirmación al cambiar estado
-    fetch("/api/orders/email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId: order.id }),
-    }).catch((err) => console.error("Error enviando correo:", err));
+    // Disparar correo de confirmación al cambiar estado si triggerEmail es true
+    if (triggerEmail) {
+      fetch("/api/orders/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id }),
+      }).catch((err) => console.error("Error enviando correo:", err));
+    }
 
     setStatusMessage(success);
     router.refresh();
@@ -317,6 +320,7 @@ export function OrderDetailPanel({ order }: OrderDetailPanelProps) {
                   void runAction(
                     () => sellerConfirmPaymentReceived(order.id),
                     "Pago confirmado. Pedido en proceso.",
+                    true,
                   )
                 }
                 type="button"

@@ -21,6 +21,8 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
     .from("orders")
     .select(`
       id,
+      status,
+      payment_reference,
       total,
       currency,
       buyer_id,
@@ -115,11 +117,39 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
     `;
   }
 
+  const isPaid = order.status === "paid"; // Pago reportado por el comprador
+
+  // Asunto
+  const buyerSubject = isPaid
+    ? `¡Pago reportado! Pedido #${orderIdShort} - Woundu`
+    : `¡Pago confirmado y recibido! Pedido #${orderIdShort} - Woundu`;
+
+  const sellerSubject = isPaid
+    ? `¡Pago reportado por el comprador! Pedido #${orderIdShort} - Woundu`
+    : `¡Venta en proceso! Pago confirmado - Woundu`;
+
+  // Encabezados
+  const buyerHeader = isPaid ? "¡Pago reportado con éxito!" : "¡Tu pago ha sido confirmado!";
+  const sellerHeader = isPaid ? "¡El comprador reportó el pago!" : "¡Pago confirmado y recibido!";
+
+  // Textos descriptivos
+  const buyerMessage = isPaid
+    ? `Tu pago para el producto <strong>${product?.title}</strong> del vendedor <strong>${seller?.full_name}</strong> ha sido reportado con la referencia/comprobante. El vendedor confirmará la recepción para coordinar tu entrega.`
+    : `El vendedor <strong>${seller?.full_name}</strong> ha confirmado que recibió el pago de tu compra del producto <strong>${product?.title}</strong>. El pedido está en proceso de entrega.`;
+
+  const sellerMessage = isPaid
+    ? `El comprador <strong>${buyer.full_name}</strong> ha reportado el pago del producto <strong>${product?.title}</strong> con la referencia: <code style="background-color: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace;">${order.payment_reference || "-"}</code>. Por favor, verifica en tu cuenta y confirma el pago recibido.`
+    : `Has confirmado la recepción del pago del comprador <strong>${buyer.full_name}</strong> para tu producto <strong>${product?.title}</strong>. La venta está en proceso de entrega.`;
+
+  const buyerStatusDetail = isPaid
+    ? `El pago ha sido reportado. El vendedor revisará la referencia y confirmará la recepción.`
+    : `El pago ha sido verificado y confirmado por el vendedor. El envío/entrega está en curso.`;
+
   const buyerMailHtml = `
     <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1e293b;">
-      <h2 style="color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">¡Confirmación de tu compra!</h2>
+      <h2 style="color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">${buyerHeader}</h2>
       <p style="font-size: 16px; line-height: 1.5;">Hola <strong>${buyer.full_name}</strong>,</p>
-      <p style="font-size: 15px; line-height: 1.5;">Tu compra del producto <strong>${product?.title}</strong> del vendedor <strong>${seller?.full_name}</strong> ha sido confirmada.</p>
+      <p style="font-size: 15px; line-height: 1.5;">${buyerMessage}</p>
       
       <div style="background-color: #f1f5f9; border-radius: 8px; padding: 16px; margin: 20px 0;">
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
@@ -144,7 +174,7 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
 
       <p style="font-size: 15px; font-weight: bold; margin-top: 25px;">Estado del Pedido:</p>
       <p style="font-size: 14px; line-height: 1.5; color: #475569;">
-        El pago/compra ha sido confirmado. Puedes revisar los datos del vendedor y el estado del envío en tu cuenta de Woundu.
+        ${buyerStatusDetail}
       </p>
 
       <!-- Enlace de WhatsApp temporalmente deshabilitado -->
@@ -161,9 +191,9 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
   // --- CORREO AL VENDEDOR ---
   const sellerMailHtml = `
     <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1e293b;">
-      <h2 style="color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">¡Confirmación de venta de tu producto!</h2>
+      <h2 style="color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">${sellerHeader}</h2>
       <p style="font-size: 16px; line-height: 1.5;">Hola <strong>${seller.full_name}</strong>,</p>
-      <p style="font-size: 15px; line-height: 1.5;">La compra del producto <strong>${product?.title}</strong> por parte del comprador <strong>${buyer.full_name}</strong> ha sido confirmada.</p>
+      <p style="font-size: 15px; line-height: 1.5;">${sellerMessage}</p>
       
       <div style="background-color: #f1f5f9; border-radius: 8px; padding: 16px; margin: 20px 0;">
         <h3 style="margin-top: 0; font-size: 15px; color: #334155;">Datos del Comprador y Envío:</h3>
@@ -220,7 +250,7 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
     emailPromises.push(
       sendTransactionalEmail({
         to: [{ email: buyer.email, name: buyer.full_name }],
-        subject: `¡Confirmación de compra! Pedido #${orderIdShort} - Woundu`,
+        subject: buyerSubject,
         htmlContent: buyerMailHtml,
       })
     );
@@ -231,7 +261,7 @@ export async function sendOrderEmailsAction(orderId: string): Promise<EmailResul
     emailPromises.push(
       sendTransactionalEmail({
         to: [{ email: seller.email, name: seller.full_name }],
-        subject: `¡Confirmación de venta de tu producto! Pedido #${orderIdShort} - Woundu`,
+        subject: sellerSubject,
         htmlContent: sellerMailHtml,
       })
     );
