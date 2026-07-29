@@ -13,6 +13,7 @@ import {
   PackagePlus,
   ShieldCheck,
   Store,
+  Tag,
   UserPlus,
   type LucideIcon,
 } from "lucide-react";
@@ -25,10 +26,10 @@ import { HeaderSignOutButton } from "./HeaderSignOutButton";
 import { BRAND_HEADER_LOGO_SRC, BRAND_NAME } from "@/constants/branding";
 import { NAV_ITEMS } from "@/constants/landing";
 import { cn } from "@/lib/utils";
-import {
-  CountryMarketplaceSelect,
-  CountryMarketplaceSelectFallback,
-} from "./CountryMarketplaceSelect";
+// import {
+//   CountryMarketplaceSelect,
+//   CountryMarketplaceSelectFallback,
+// } from "./CountryMarketplaceSelect";
 import { HomeSearchBar } from "../marketplace/HomeSearchBar";
 
 type SiteHeaderClientProps = Readonly<{
@@ -49,6 +50,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/marketplace": Store,
   "/marketplace#categorias": LayoutGrid,
   "/paises": Globe,
+  "/marketplace?solo_ofertas=1": Tag,
 };
 
 export function SiteHeaderClient({
@@ -139,11 +141,13 @@ export function SiteHeaderClient({
             <Menu aria-hidden="true" className="h-5 w-5" />
           </summary>
           <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-[min(100vw-2rem,20rem)] rounded-2xl border border-slate-200 bg-white p-3 shadow-xl shadow-slate-950/10">
+            {/* 
             <Suspense
               fallback={<CountryMarketplaceSelectFallback layout="mobile" />}
             >
               <CountryMarketplaceSelect layout="mobile" />
             </Suspense>
+            */}
             <nav aria-label="Navegacion movil" className="mt-3 flex flex-col gap-1">
               {NAV_ITEMS.map((item) => {
                 if (item.label === "Categorías") {
@@ -216,14 +220,16 @@ export function SiteHeaderClient({
       </div>
 
       {/* FILA INFERIOR: Selector de País + Enlaces de Navegación (Solo Escritorio) */}
-      <div className="hidden border-t border-brand-dark/20 bg-brand-dark/10 md:block">
+      <div className="hidden bg-brand-dark/10 md:block">
         <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-6">
+            {/* 
             <Suspense
               fallback={<CountryMarketplaceSelectFallback layout="desktop" />}
             >
               <CountryMarketplaceSelect layout="desktop" />
             </Suspense>
+            */}
 
             <nav
               aria-label="Navegacion principal"
