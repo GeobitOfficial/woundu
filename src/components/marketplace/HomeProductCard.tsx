@@ -68,7 +68,11 @@ export function HomeProductCard({
           <p className="mt-2 text-xs text-slate-400 line-through">
             {formatProductPrice(product.compareAtPrice, product.currency)}
           </p>
-        ) : null}
+        ) : (
+          <p className="mt-2 text-xs select-none text-transparent">
+            &nbsp;
+          </p>
+        )}
 
         <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <p className="text-xl font-normal text-slate-950">

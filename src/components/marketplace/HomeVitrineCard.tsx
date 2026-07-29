@@ -74,7 +74,11 @@ export function HomeVitrineCard({
             <p className="text-xs text-slate-400 line-through">
               {formatProductPrice(product.compareAtPrice, product.currency)}
             </p>
-          ) : null}
+          ) : (
+            <p className="text-xs select-none text-transparent">
+              &nbsp;
+            </p>
+          )}
           <p
             className={cn(
               "font-semibold text-slate-950",

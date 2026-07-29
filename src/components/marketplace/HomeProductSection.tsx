@@ -222,7 +222,15 @@ function FloatingCardsSection({
         {section.products.length === 0 ? (
           <EmptyStrip section={section} />
         ) : (
-          <CarouselTrack cardVariant="elevated" products={section.products} />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {section.products.slice(0, 4).map((product) => (
+              <HomeVitrineCard
+                key={product.id}
+                product={product}
+                variant="bento"
+              />
+            ))}
+          </div>
         )}
       </div>
     </section>

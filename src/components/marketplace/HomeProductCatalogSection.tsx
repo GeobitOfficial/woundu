@@ -103,7 +103,11 @@ function CatalogProductCard({ product }: Readonly<{ product: ProductCardItem }>)
             <p className="text-xs text-slate-400 line-through">
               {formatProductPrice(product.compareAtPrice, product.currency)}
             </p>
-          ) : null}
+          ) : (
+            <p className="text-xs select-none text-transparent">
+              &nbsp;
+            </p>
+          )}
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <p className="text-xl font-semibold text-slate-950">
               {formatProductPrice(product.price, product.currency)}

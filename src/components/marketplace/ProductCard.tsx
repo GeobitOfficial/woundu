@@ -127,7 +127,11 @@ export function ProductCard({
               <p className="text-[10px] text-slate-400 line-through sm:text-xs">
                 {formatProductPrice(product.compareAtPrice, product.currency)}
               </p>
-            ) : null}
+            ) : (
+              <p className="text-[10px] sm:text-xs select-none text-transparent">
+                &nbsp;
+              </p>
+            )}
             <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
               <p className="text-base font-bold text-slate-950 sm:text-lg">{priceLabel}</p>
               {discount != null ? (
