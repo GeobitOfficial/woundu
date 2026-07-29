@@ -334,7 +334,7 @@ export function ProductCardMarketActions({
       <div className="flex flex-wrap items-center gap-1.5">
         {renderBuyAction()}
 
-        {viewerId ? (
+        {viewerId && !compact ? (
           <button
             aria-label={favorited ? "Quitar de favoritos" : "Agregar a favoritos"}
             aria-pressed={favorited}

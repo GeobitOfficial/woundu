@@ -1,7 +1,13 @@
+"use client";
+
 import Link from "next/link";
-import { MapPin } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Heart, Loader2, MapPin } from "lucide-react";
 
 import { Badge } from "@/components/ui";
+import { setProductFavorite } from "@/features/favorites/services/favoriteMutations";
+import { cn } from "@/lib/utils";
 import type { ProductCardItem } from "@/features/products";
 import {
   formatProductPrice,
@@ -31,13 +37,38 @@ export function ProductCard({
   product,
   viewerId,
 }: ProductCardProps) {
+  const router = useRouter();
+  const [favorited, setFavorited] = useState(initialFavorited);
+  const [favoriteBusy, setFavoriteBusy] = useState(false);
+
+  useEffect(() => {
+    setFavorited(initialFavorited);
+  }, [initialFavorited]);
+
   const href = getProductMarketplaceHref(product);
   const location = [product.city, product.country].filter(Boolean).join(", ");
   const priceLabel = formatProductPrice(product.price, product.currency);
   const discount = getProductDiscountPercent(product);
 
+  const handleFavoriteClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!viewerId) {
+      router.push(`/login?next=${encodeURIComponent(href)}`);
+      return;
+    }
+    setFavoriteBusy(true);
+    const next = !favorited;
+    const { error } = await setProductFavorite(product.id, next);
+    setFavoriteBusy(false);
+    if (!error) {
+      setFavorited(next);
+      router.refresh();
+    }
+  };
+
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-sm border border-slate-100 bg-slate-50 transition hover:border-slate-300 hover:bg-white hover:shadow-sm">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-sm border border-slate-100 bg-slate-50 transition hover:border-slate-300 hover:bg-white hover:shadow-sm">
       <Link
         aria-label={`Ver detalle de ${product.title}`}
         className="flex flex-1 flex-col outline-offset-[-2px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
@@ -45,10 +76,10 @@ export function ProductCard({
       >
         <div className="relative">
           <ProductThumbnail
-            className="aspect-[5/4] border-b border-white/10 p-2"
-            imageClassName="max-h-[7.5rem] object-contain"
+            className="aspect-[5/4] border-b border-slate-100 p-0"
+            imageClassName="w-full h-full object-cover"
             product={product}
-            tone="dark"
+            tone="light"
           />
           {product.isOnOffer ? (
             <Badge
@@ -58,6 +89,26 @@ export function ProductCard({
               Oferta
             </Badge>
           ) : null}
+
+          <button
+            aria-label={favorited ? "Quitar de favoritos" : "Agregar a favoritos"}
+            className={cn(
+              "absolute right-2 top-2 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-slate-600 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-white hover:scale-105 hover:text-rose-600 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-brand",
+              favorited ? "text-rose-600 opacity-100" : "opacity-0 group-hover:opacity-100"
+            )}
+            disabled={favoriteBusy}
+            onClick={handleFavoriteClick}
+            type="button"
+          >
+            {favoriteBusy ? (
+              <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
+            ) : (
+              <Heart
+                aria-hidden
+                className={cn("h-4 w-4 transition-transform active:scale-90", favorited && "fill-current")}
+              />
+            )}
+          </button>
         </div>
 
         <div className="flex flex-1 flex-col p-2.5 sm:p-3">

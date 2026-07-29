@@ -55,7 +55,7 @@ export function LandingHero({
             {productCard1 ? (
               <Link
                 href={getProductMarketplaceHref(productCard1)}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]"
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]"
               >
                 <div>
                   <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
@@ -63,7 +63,7 @@ export function LandingHero({
                   </h3>
                   <div className="flex justify-center mb-3">
                     <ProductThumbnail
-                      className="h-16 w-16 object-contain rounded-lg bg-slate-50 p-1"
+                      className="h-24 w-24 object-contain rounded-lg bg-slate-50 p-1"
                       product={productCard1}
                     />
                   </div>
@@ -83,7 +83,7 @@ export function LandingHero({
             ) : null}
 
             {/* Card 2: Ofertas rápidas */}
-            <div className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]">
+            <div className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]">
               <div>
                 <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
                   Ofertas rápidas
@@ -126,7 +126,7 @@ export function LandingHero({
             {productCard3 ? (
               <Link
                 href={getProductMarketplaceHref(productCard3)}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]"
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]"
               >
                 <div>
                   <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
@@ -134,7 +134,7 @@ export function LandingHero({
                   </h3>
                   <div className="flex justify-center mb-3">
                     <ProductThumbnail
-                      className="h-16 w-16 object-contain rounded-lg bg-slate-50 p-1"
+                      className="h-24 w-24 object-contain rounded-lg bg-slate-50 p-1"
                       product={productCard3}
                     />
                   </div>
@@ -157,7 +157,7 @@ export function LandingHero({
             {productCard4 ? (
               <Link
                 href={getProductMarketplaceHref(productCard4)}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]"
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]"
               >
                 <div>
                   <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
@@ -165,7 +165,7 @@ export function LandingHero({
                   </h3>
                   <div className="flex justify-center mb-3">
                     <ProductThumbnail
-                      className="h-16 w-16 object-contain rounded-lg bg-slate-50 p-1"
+                      className="h-24 w-24 object-contain rounded-lg bg-slate-50 p-1"
                       product={productCard4}
                     />
                   </div>
@@ -188,7 +188,7 @@ export function LandingHero({
             {productCard5 ? (
               <Link
                 href={getProductMarketplaceHref(productCard5)}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]"
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]"
               >
                 <div>
                   <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
@@ -196,7 +196,7 @@ export function LandingHero({
                   </h3>
                   <div className="flex justify-center mb-3">
                     <ProductThumbnail
-                      className="h-16 w-16 object-contain rounded-lg bg-slate-50 p-1"
+                      className="h-24 w-24 object-contain rounded-lg bg-slate-50 p-1"
                       product={productCard5}
                     />
                   </div>
@@ -219,7 +219,7 @@ export function LandingHero({
             {productCard6 ? (
               <Link
                 href={getProductMarketplaceHref(productCard6)}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem]"
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]"
               >
                 <div>
                   <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
@@ -227,7 +227,7 @@ export function LandingHero({
                   </h3>
                   <div className="flex justify-center mb-3">
                     <ProductThumbnail
-                      className="h-16 w-16 object-contain rounded-lg bg-slate-50 p-1"
+                      className="h-24 w-24 object-contain rounded-lg bg-slate-50 p-1"
                       product={productCard6}
                     />
                   </div>
