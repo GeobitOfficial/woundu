@@ -331,7 +331,7 @@ export function MarketplaceFiltersPanel({
             </div>
           </div>
 
-          {/* 6. CALIFICACIÓN (ESTRELLAS DE AMAZON) */}
+          {/* 6. CALIFICACIÓN */}
           <div className="space-y-2 border-t border-slate-100 pt-4">
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
               Calificación promedio

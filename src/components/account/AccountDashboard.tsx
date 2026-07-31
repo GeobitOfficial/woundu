@@ -14,6 +14,7 @@ import type { AccountDashboardSnapshot } from "@/features/account/types";
 import type { SellerPayoutProfile } from "@/features/orders/types";
 import type { PendingProductReview } from "@/features/reviews/types";
 import { getAvatarUrl, getInitials } from "@/lib/avatars/getAvatarUrl";
+import type { ProductCardItem } from "@/features/products";
 import type { SellerSalesCounts } from "@/services/supabase/account/sellerSalesAccountService";
 import { canAccessBuyerFeatures, canAccessSellerFeatures, getRoleLabel } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,8 @@ type AccountDashboardProps = Readonly<{
   sellerSalesCounts: SellerSalesCounts;
   pendingReviews: ReadonlyArray<PendingProductReview>;
   unreadNotificationCount?: number;
+  suggestedProducts?: ReadonlyArray<ProductCardItem>;
+  error?: string | null;
 }>;
 
 export function AccountDashboard({
@@ -41,6 +44,8 @@ export function AccountDashboard({
   pendingReviews,
   snapshot,
   unreadNotificationCount = 0,
+  suggestedProducts = [],
+  error = null,
 }: AccountDashboardProps) {
   const { profile, buyerOrders, sellerLines, productStats, sellerSalesTotals, favoriteProducts } =
     snapshot;
@@ -59,6 +64,8 @@ export function AccountDashboard({
         pendingReviews={pendingReviews}
         snapshot={snapshot}
         unreadNotificationCount={unreadNotificationCount}
+        suggestedProducts={suggestedProducts}
+        error={error}
       />
     );
   }

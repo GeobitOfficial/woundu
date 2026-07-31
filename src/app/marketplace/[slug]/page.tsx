@@ -69,8 +69,8 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const [favorited, sellerPayout, reviews, buyerPurchaseContext, relatedProducts, sellerRelatedProducts] = await Promise.all([
     user && supabase
       ? listFavoriteProductIdsForUser(supabase, user.id).then((ids) =>
-          ids.includes(product.id),
-        )
+        ids.includes(product.id),
+      )
       : Promise.resolve(false),
     user ? getSellerPayoutProfileForUser(product.sellerId) : Promise.resolve(null),
     getProductReviewsForProduct(product.id),
@@ -82,9 +82,9 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       : Promise.resolve([]),
     product.category?.slug
       ? getMarketplaceProducts({
-          categorySlug: product.category.slug,
-          sellerId: product.sellerId,
-        })
+        categorySlug: product.category.slug,
+        sellerId: product.sellerId,
+      })
       : Promise.resolve([]),
   ]);
 
@@ -134,7 +134,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
         <article className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
+
             {/* Slot 1: Imágenes del producto (Izquierda) */}
             <div className="lg:col-span-5">
               <ProductImageGallery images={product.images} title={product.title} />
@@ -223,7 +223,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 </p>
               </div>
 
-              {/* Lo que tienes que saber de este producto (Bulleted list al estilo Mercado Libre) */}
+              {/* info del producto*/}
               {(() => {
                 if (!product.specifications || !Array.isArray(product.specifications) || product.specifications.length === 0) {
                   return null;
@@ -232,9 +232,10 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 const bulletSpecs = mainSpecs.length > 0 ? mainSpecs : product.specifications.slice(0, 6);
                 return (
                   <div className="border-t border-slate-100 pt-6">
-                    <h3 className="text-sm font-bold text-slate-900 mb-3">
-                      Lo que tienes que saber de este producto
-                    </h3>
+                    <h2
+                      className="text-sm font-bold text-slate-900 mb-3">
+                      Información del producto:
+                    </h2 >
                     <ul className="list-disc pl-5 space-y-2 text-xs text-slate-700">
                       {bulletSpecs.map((spec: any, i: number) => (
                         <li key={i}>
@@ -369,7 +370,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           </div>
         </article>
 
-        {/* Especificaciones Detalladas (Agrupadas al estilo Mercado Libre en la zona de abajo) */}
+        {/* Especificaciones Detalladas */}
         {(() => {
           if (!product.specifications || !Array.isArray(product.specifications) || product.specifications.length === 0) {
             return null;

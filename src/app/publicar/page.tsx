@@ -36,7 +36,7 @@ export default async function PublishProductPage() {
   const profile = await getAuthenticatedProfile();
 
   if (!canAccessSellerFeatures(profile?.role)) {
-    redirect("/cuenta");
+    redirect("/cuenta?error=solo_vendedores");
   }
 
   const [categories, sellerLocale, accountSnapshot] = await Promise.all([

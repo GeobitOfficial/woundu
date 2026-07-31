@@ -15,6 +15,8 @@ import {
   Store,
   Tag,
   UserPlus,
+  ShoppingBag,
+  LifeBuoy,
   type LucideIcon,
 } from "lucide-react";
 
@@ -51,6 +53,9 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/marketplace#categorias": LayoutGrid,
   "/paises": Globe,
   "/marketplace?solo_ofertas=1": Tag,
+  "/publicar": PackagePlus,
+  "/cuenta/compras": ShoppingBag,
+  "/cuenta/soporte": LifeBuoy,
 };
 
 export function SiteHeaderClient({

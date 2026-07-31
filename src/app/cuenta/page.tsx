@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { AccountDashboard } from "@/components/account";
+import { getMarketplaceProducts } from "@/features/products/services/productService";
 import { getSellerPayoutForAccount } from "@/features/orders/services/orderReadService";
 import { getPendingReviewsForBuyer } from "@/features/reviews/services/reviewReadService";
 import { getAccountDashboard } from "@/services/supabase/account/accountService";
@@ -12,7 +13,13 @@ import {
 import { getUnreadNotificationCount } from "@/features/notifications/services/notificationReadService";
 import { createSupabaseServerClient } from "@/services/supabase/server";
 import { canAccessSellerFeatures } from "@/lib/auth/roles";
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }> | { error?: string };
+}) {
+  const resolvedParams = searchParams instanceof Promise ? await searchParams : searchParams;
+  const error = resolvedParams?.error ?? null;
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
@@ -46,6 +53,7 @@ export default async function AccountPage() {
     pendingReviews,
     unreadNotificationCount,
     sellerSalesCounts,
+    suggestedProducts,
   ] = await Promise.all([
       showSellerFeatures
         ? getSellerEarningsForCurrentMonth(supabase, user.id)
@@ -58,11 +66,16 @@ export default async function AccountPage() {
       showSellerFeatures
         ? getSellerSalesCounts(supabase, user.id)
         : Promise.resolve(emptySalesCounts),
+      getMarketplaceProducts({}),
     ]);
   const authFullName =
     typeof user.user_metadata.full_name === "string"
       ? user.user_metadata.full_name
       : null;
+
+  const buyerSuggestions = (suggestedProducts || [])
+    .filter((p: any) => p.sellerId !== user.id)
+    .slice(0, 4);
 
   return (
     <AccountDashboard
@@ -74,6 +87,8 @@ export default async function AccountPage() {
       sellerSalesCounts={sellerSalesCounts}
       snapshot={snapshot}
       unreadNotificationCount={unreadNotificationCount}
+      suggestedProducts={buyerSuggestions}
+      error={error}
     />
   );
 }
