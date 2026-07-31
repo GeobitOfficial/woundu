@@ -79,6 +79,8 @@ export const createProductSchema = z
         z.object({
           key: z.string().trim().min(1, "El nombre de la característica no puede estar vacío."),
           value: z.string().trim().min(1, "El valor de la característica no puede estar vacío."),
+          group: z.string().trim().default("Características generales"),
+          isMain: z.boolean().default(false),
         }),
       )
       .optional(),

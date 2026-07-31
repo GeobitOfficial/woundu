@@ -124,12 +124,14 @@ export function ProductForm({
       return product.specifications.map((spec: any) => ({
         key: String(spec.key || ""),
         value: String(spec.value || ""),
+        group: String(spec.group || "Características generales"),
+        isMain: Boolean(spec.isMain ?? false),
       }));
     }
     return [];
   }, [product?.specifications]);
 
-  const [specifications, setSpecifications] = useState<{ key: string; value: string }[]>(initialSpecs);
+  const [specifications, setSpecifications] = useState<{ key: string; value: string; group?: string; isMain?: boolean }[]>(initialSpecs);
 
   const CATEGORY_SPEC_PRESETS: Record<string, string[]> = {
     tecnologia: ["Marca", "Modelo", "Memoria RAM", "Almacenamiento", "Procesador", "Sistema Operativo"],
@@ -481,14 +483,30 @@ export function ProductForm({
 
             name="categoryId"
 
-            onChange={(e) => {
+             onChange={(e) => {
               const catId = e.target.value;
               setSelectedCategory(catId);
               const category = categories.find((cat) => cat.id === catId);
               if (category) {
                 const slug = category.slug.toLowerCase();
                 const presets = CATEGORY_SPEC_PRESETS[slug] || CATEGORY_SPEC_PRESETS.default;
-                setSpecifications(presets.map((key) => ({ key, value: "" })));
+                setSpecifications(presets.map((key) => {
+                  let group = "Características generales";
+                  if (slug === "tecnologia") {
+                    if (["Memoria RAM", "Tipo de memoria RAM"].includes(key)) group = "Memoria";
+                    else if (["Almacenamiento", "Capacidad de disco SSD"].includes(key)) group = "Almacenamiento";
+                    else if (["Procesador", "Marca del procesador", "Línea del procesador", "Modelo del procesador"].includes(key)) group = "Procesador";
+                    else if (["Pantalla", "Frecuencia de actualización de la pantalla", "Resolución de la pantalla"].includes(key)) group = "Pantalla";
+                    else if (["Marca", "Modelo", "Color"].includes(key)) group = "Características generales";
+                    else group = "Características principales";
+                  }
+                  return {
+                    key,
+                    value: "",
+                    group,
+                    isMain: true, // Auto-mark presets as main by default
+                  };
+                }));
               } else {
                 setSpecifications([]);
               }
@@ -742,64 +760,167 @@ export function ProductForm({
               Especificaciones detalladas
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Agrega detalles técnicos del producto (ej: Marca, Modelo, Capacidad) para ayudar a los compradores.
+              Agrega detalles técnicos del producto agrupándolos en secciones (ej: Memoria, Pantalla) y marca los principales para destacarlos arriba.
             </p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {specifications.map((spec, index) => (
-              <div key={index} className="flex gap-3 items-center">
-                <input
-                  type="text"
-                  placeholder="Característica (ej: Marca)"
-                  value={spec.key}
-                  onChange={(e) => {
-                    const newSpecs = [...specifications];
-                    newSpecs[index].key = e.target.value;
-                    setSpecifications(newSpecs);
-                  }}
-                  className="h-11 w-1/3 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15"
-                />
-                <input
-                  type="text"
-                  placeholder="Valor (ej: Intel Core 5)"
-                  value={spec.value}
-                  onChange={(e) => {
-                    const newSpecs = [...specifications];
-                    newSpecs[index].value = e.target.value;
-                    setSpecifications(newSpecs);
-                  }}
-                  className="h-11 w-2/3 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSpecifications(specifications.filter((_, i) => i !== index));
-                  }}
-                  className="rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 p-2.5 transition shrink-0"
-                  title="Eliminar fila"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center border border-slate-100 bg-slate-50/50 p-3 rounded-2xl">
+                {/* Característica */}
+                <div className="sm:col-span-3">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nombre</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Marca"
+                    value={spec.key}
+                    onChange={(e) => {
+                      const newSpecs = [...specifications];
+                      newSpecs[index].key = e.target.value;
+                      setSpecifications(newSpecs);
+                    }}
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-950 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
+                  />
+                </div>
+
+                {/* Valor */}
+                <div className="sm:col-span-4">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Valor</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Intel Core i7"
+                    value={spec.value}
+                    onChange={(e) => {
+                      const newSpecs = [...specifications];
+                      newSpecs[index].value = e.target.value;
+                      setSpecifications(newSpecs);
+                    }}
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-950 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
+                  />
+                </div>
+
+                {/* Grupo */}
+                <div className="sm:col-span-3">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Grupo / Sección</label>
+                  {(() => {
+                    const standardGroups = [
+                      "Características principales",
+                      "Características generales",
+                      "Almacenamiento",
+                      "Memoria",
+                      "Pantalla",
+                      "Procesador",
+                      "Conectividad",
+                      "Batería",
+                      "Cámara",
+                      "Especificaciones físicas",
+                    ];
+                    const isCustom = spec.group !== undefined && spec.group !== "" && !standardGroups.includes(spec.group);
+                    if (isCustom) {
+                      return (
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="Escribe sección..."
+                            value={spec.group}
+                            onChange={(e) => {
+                              const newSpecs = [...specifications];
+                              newSpecs[index].group = e.target.value;
+                              setSpecifications(newSpecs);
+                            }}
+                            className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-3 pr-10 text-sm text-slate-950 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 animate-in fade-in duration-200"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newSpecs = [...specifications];
+                              newSpecs[index].group = "Características generales";
+                              setSpecifications(newSpecs);
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-brand hover:underline"
+                            title="Volver a la lista de grupos"
+                          >
+                            Lista
+                          </button>
+                        </div>
+                      );
+                    }
+                    return (
+                      <select
+                        value={spec.group || "Características generales"}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const newSpecs = [...specifications];
+                          if (val === "__custom__") {
+                            newSpecs[index].group = " "; // triggers custom text input
+                          } else {
+                            newSpecs[index].group = val;
+                          }
+                          setSpecifications(newSpecs);
+                        }}
+                        className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-950 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
+                      >
+                        {standardGroups.map((g) => (
+                          <option key={g} value={g}>
+                            {g}
+                          </option>
+                        ))}
+                        <option value="__custom__">Sección personalizada...</option>
+                      </select>
+                    );
+                  })()}
+                </div>
+
+                {/* Principal Checkbox */}
+                <div className="sm:col-span-1.5 flex items-center justify-start pt-2 sm:pt-4">
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={spec.isMain || false}
+                      onChange={(e) => {
+                        const newSpecs = [...specifications];
+                        newSpecs[index].isMain = e.target.checked;
+                        setSpecifications(newSpecs);
+                      }}
+                      className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
                     />
-                  </svg>
-                </button>
+                    <span className="text-[11px] font-bold text-slate-700">Principal</span>
+                  </label>
+                </div>
+
+                {/* Delete button */}
+                <div className="sm:col-span-0.5 flex justify-end pt-2 sm:pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSpecifications(specifications.filter((_, i) => i !== index));
+                    }}
+                    className="rounded-lg border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 p-2 transition shrink-0"
+                    title="Eliminar"
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
             ))}
 
             <button
               type="button"
               onClick={() => {
-                setSpecifications([...specifications, { key: "", value: "" }]);
+                setSpecifications([...specifications, { key: "", value: "", group: "Características generales", isMain: false }]);
               }}
               className="mt-2 inline-flex items-center gap-1.5 rounded-xl border border-brand bg-brand/5 hover:bg-brand/10 text-brand px-4 py-2 text-xs font-bold transition shadow-sm"
             >

@@ -223,30 +223,29 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 </p>
               </div>
 
-              {/* Especificaciones Detalladas (Tabla Clave-Valor) */}
-              {product.specifications && product.specifications.length > 0 ? (
-                <div className="border-t border-slate-100 pt-6">
-                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-3">
-                    Especificaciones detalladas
-                  </h3>
-                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                    <table className="min-w-full divide-y divide-slate-150">
-                      <tbody className="divide-y divide-slate-100">
-                        {product.specifications.map((spec, i) => (
-                          <tr key={i} className="odd:bg-white even:bg-slate-50/50">
-                            <td className="w-1/3 py-2.5 px-4 text-xs font-bold text-slate-500 uppercase tracking-wide">
-                              {spec.key}
-                            </td>
-                            <td className="w-2/3 py-2.5 px-4 text-xs font-semibold text-slate-800">
-                              {spec.value}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+              {/* Lo que tienes que saber de este producto (Bulleted list al estilo Mercado Libre) */}
+              {(() => {
+                if (!product.specifications || !Array.isArray(product.specifications) || product.specifications.length === 0) {
+                  return null;
+                }
+                const mainSpecs = product.specifications.filter((spec: any) => spec.isMain);
+                const bulletSpecs = mainSpecs.length > 0 ? mainSpecs : product.specifications.slice(0, 6);
+                return (
+                  <div className="border-t border-slate-100 pt-6">
+                    <h3 className="text-sm font-bold text-slate-900 mb-3">
+                      Lo que tienes que saber de este producto
+                    </h3>
+                    <ul className="list-disc pl-5 space-y-2 text-xs text-slate-700">
+                      {bulletSpecs.map((spec: any, i: number) => (
+                        <li key={i}>
+                          <span className="font-semibold text-slate-800">{spec.key}:</span>{" "}
+                          <span>{spec.value}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </div>
-              ) : null}
+                );
+              })()}
             </div>
 
             {/* Slot 3: Compra y Checkout (Derecha - Sticky) */}
@@ -369,6 +368,55 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
           </div>
         </article>
+
+        {/* Especificaciones Detalladas (Agrupadas al estilo Mercado Libre en la zona de abajo) */}
+        {(() => {
+          if (!product.specifications || !Array.isArray(product.specifications) || product.specifications.length === 0) {
+            return null;
+          }
+          // Group specifications by group field
+          const specsByGroup: Record<string, Array<{ key: string; value: string }>> = {};
+          product.specifications.forEach((spec: any) => {
+            const gName = spec.group?.trim() || "Características generales";
+            if (!specsByGroup[gName]) {
+              specsByGroup[gName] = [];
+            }
+            specsByGroup[gName].push(spec);
+          });
+
+          return (
+            <div className="mt-6 bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm animate-in fade-in duration-200">
+              <h2 className="text-lg font-black text-slate-900 mb-6 border-b border-slate-100 pb-3">
+                Especificaciones
+              </h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {Object.entries(specsByGroup).map(([groupName, specs]) => (
+                  <div key={groupName} className="space-y-3">
+                    <h3 className="text-sm font-bold text-slate-800 tracking-wide uppercase">
+                      {groupName}
+                    </h3>
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                      <table className="min-w-full divide-y divide-slate-100">
+                        <tbody className="divide-y divide-slate-100">
+                          {specs.map((spec, i) => (
+                            <tr key={i} className="odd:bg-white even:bg-slate-50/30">
+                              <td className="w-1/2 py-3 px-5 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-r border-slate-100">
+                                {spec.key}
+                              </td>
+                              <td className="w-1/2 py-3 px-5 text-xs font-bold text-slate-900">
+                                {spec.value}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Descripción Detallada (Larga) */}
         {product.longDescription ? (
