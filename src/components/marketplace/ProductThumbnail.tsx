@@ -25,8 +25,7 @@ export function ProductThumbnail({
     return (
       <div
         className={cn(
-          "flex items-center justify-center overflow-hidden",
-          isDark ? "bg-slate-50" : "bg-white",
+          "flex items-center justify-center overflow-hidden bg-transparent",
           className,
         )}
       >

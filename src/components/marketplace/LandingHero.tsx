@@ -63,7 +63,7 @@ export function LandingHero({
                   </h3>
                   <div className="flex justify-center mb-3">
                     <ProductThumbnail
-                      className="h-24 w-24 object-contain rounded-lg bg-slate-50 p-1"
+                      className="h-24 w-24 object-contain rounded-lg bg-transparent p-1"
                       product={productCard1}
                     />
                   </div>
@@ -95,7 +95,7 @@ export function LandingHero({
                         <Link
                           key={item.id}
                           href={getProductMarketplaceHref(item)}
-                          className="aspect-square bg-slate-50 rounded-lg p-1 border border-slate-100 hover:border-brand transition"
+                          className="aspect-square bg-transparent rounded-lg p-1 border border-slate-100 hover:border-brand transition"
                         >
                           <ProductThumbnail
                             className="h-full w-full object-contain"
@@ -134,7 +134,7 @@ export function LandingHero({
                   </h3>
                   <div className="flex justify-center mb-3">
                     <ProductThumbnail
-                      className="h-24 w-24 object-contain rounded-lg bg-slate-50 p-1"
+                      className="h-24 w-24 object-contain rounded-lg bg-transparent p-1"
                       product={productCard3}
                     />
                   </div>
@@ -165,7 +165,7 @@ export function LandingHero({
                   </h3>
                   <div className="flex justify-center mb-3">
                     <ProductThumbnail
-                      className="h-24 w-24 object-contain rounded-lg bg-slate-50 p-1"
+                      className="h-24 w-24 object-contain rounded-lg bg-transparent p-1"
                       product={productCard4}
                     />
                   </div>
@@ -196,7 +196,7 @@ export function LandingHero({
                   </h3>
                   <div className="flex justify-center mb-3">
                     <ProductThumbnail
-                      className="h-24 w-24 object-contain rounded-lg bg-slate-50 p-1"
+                      className="h-24 w-24 object-contain rounded-lg bg-transparent p-1"
                       product={productCard5}
                     />
                   </div>
@@ -227,7 +227,7 @@ export function LandingHero({
                   </h3>
                   <div className="flex justify-center mb-3">
                     <ProductThumbnail
-                      className="h-24 w-24 object-contain rounded-lg bg-slate-50 p-1"
+                      className="h-24 w-24 object-contain rounded-lg bg-transparent p-1"
                       product={productCard6}
                     />
                   </div>
