@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -57,38 +58,38 @@ export function HomeCarousel({ products }: HomeCarouselProps) {
               "absolute inset-0 flex flex-col md:flex-row transition-all duration-700 ease-in-out",
               isCurrent
                 ? "opacity-100 translate-x-0 z-10"
-                : "opacity-0 translate-x-12 pointer-events-none"
+                : "opacity-0 translate-x-12 pointer-events-none invisible"
             )}
           >
             {/* Contenedor alineado para el contenido */}
             <div className="mx-auto flex w-full max-w-7xl flex-col md:flex-row px-4 sm:px-6 lg:px-8 h-full">
               {/* Lado Izquierdo: Info (Tema Oscuro) */}
-              <div className="flex flex-1 flex-col justify-center py-6 pr-4 md:py-12 bg-gradient-to-r from-slate-950 via-slate-950/40 to-transparent z-20">
-                <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-brand/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand">
+              <div className="flex flex-none h-auto md:flex-1 md:h-auto flex-col items-start text-left justify-start md:justify-center pt-6 pb-2 pl-14 pr-4 md:py-12 md:pl-20 md:pr-4 bg-gradient-to-r from-slate-950 via-slate-950/40 to-transparent z-20">
+                <span className="mb-2 md:mb-3 hidden md:inline-flex w-fit items-center gap-1.5 rounded-full bg-brand/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand">
                   <Sparkles className="h-3.5 w-3.5" />
                   Destacado Woundu
                 </span>
-                <h2 className="text-xl md:text-4xl font-extrabold leading-tight text-white line-clamp-2 mb-3">
+                <h2 className="text-base md:text-4xl font-extrabold leading-tight text-white line-clamp-1 md:line-clamp-2 mb-1.5 md:mb-3">
                   {product.title}
                 </h2>
-                <div className="flex items-baseline gap-2.5 mb-5">
+                <div className="flex items-baseline gap-2 mb-3 md:mb-5">
                   {product.isOnOffer && product.compareAtPrice != null && (
-                    <span className="text-xs text-slate-400 line-through">
+                    <span className="text-[10px] md:text-xs text-slate-400 line-through">
                       {formatProductPrice(product.compareAtPrice, product.currency)}
                     </span>
                   )}
-                  <span className="text-2xl md:text-4xl font-black text-brand">
+                  <span className="text-lg md:text-4xl font-black text-brand">
                     {formatProductPrice(product.price, product.currency)}
                   </span>
                   {discount != null && (
-                    <span className="rounded-md bg-brand px-2 py-0.5 text-[10px] font-bold text-slate-950 uppercase">
+                    <span className="rounded-md bg-brand px-1.5 py-0.5 text-[8px] md:text-[10px] font-bold text-slate-950 uppercase">
                       {discount}% OFF
                     </span>
                   )}
                 </div>
                 <Link
                   href={href}
-                  className="inline-flex w-fit items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-xs font-bold text-slate-950 transition hover:bg-brand-hover shadow-md shadow-brand/10"
+                  className="inline-flex w-fit items-center gap-2 rounded-xl bg-brand px-4 py-2 md:px-5 md:py-2.5 text-xs font-bold text-slate-950 transition hover:bg-brand-hover shadow-md shadow-brand/10"
                 >
                   Comprar ahora
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -102,10 +103,10 @@ export function HomeCarousel({ products }: HomeCarouselProps) {
                   <img
                     src={imageUrl}
                     alt={product.title}
-                    className="max-h-[10rem] md:max-h-[20rem] w-auto object-contain transition-transform duration-700 hover:scale-105"
+                    className="max-h-[12rem] md:max-h-[20rem] w-auto object-contain transition-transform duration-700 hover:scale-105"
                   />
                 ) : (
-                  <div className="h-24 w-24 rounded-xl bg-slate-900 flex items-center justify-center text-slate-500 text-xs">
+                  <div className="h-20 w-20 md:h-24 md:w-24 rounded-xl bg-slate-900 flex items-center justify-center text-slate-500 text-xs">
                     Sin imagen
                   </div>
                 )}
@@ -117,7 +118,7 @@ export function HomeCarousel({ products }: HomeCarouselProps) {
 
       {/* Controles de Navegación manual (Flechas) */}
       {products.length > 1 && (
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-30 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-between pointer-events-none">
+        <div className="absolute inset-x-4 md:inset-x-8 top-1/2 -translate-y-1/2 z-30 flex justify-between pointer-events-none">
           <button
             type="button"
             onClick={() =>
@@ -148,7 +149,7 @@ export function HomeCarousel({ products }: HomeCarouselProps) {
 
       {/* Dots indicadores */}
       {products.length > 1 && (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+        <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-2">
           {products.map((_, index) => (
             <button
               key={index}

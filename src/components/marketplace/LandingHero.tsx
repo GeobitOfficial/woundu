@@ -48,26 +48,26 @@ export function LandingHero({
 
       {/* 2. CUADRÍCULA DE 6 TARJETAS (Dashboard Proporcional Overlapping con Gradiente Azul) */}
       <div className="relative -mt-14 md:-mt-20 z-20 w-full bg-gradient-to-b from-slate-950 via-blue-950 to-[#eaeded] pt-20 pb-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 items-stretch">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+          <div className="grid gap-2.5 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 items-stretch">
 
             {/* Card 1: Última publicación */}
             {productCard1 ? (
               <Link
                 href={getProductMarketplaceHref(productCard1)}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]"
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-3 sm:p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem] sm:min-h-[19rem]"
               >
                 <div>
-                  <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
+                  <h3 className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">
                     Último agregado
                   </h3>
-                  <div className="flex justify-center mb-3">
+                  <div className="flex justify-center mb-2 sm:mb-3">
                     <ProductThumbnail
-                      className="h-24 w-24 object-contain rounded-lg bg-transparent p-1"
+                      className="h-20 w-20 sm:h-24 sm:w-24 object-contain rounded-lg bg-transparent p-1"
                       product={productCard1}
                     />
                   </div>
-                  <h4 className="text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-brand transition">
+                  <h4 className="text-[11px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-brand transition">
                     {productCard1.title}
                   </h4>
                 </div>
@@ -83,9 +83,9 @@ export function LandingHero({
             ) : null}
 
             {/* Card 2: Ofertas rápidas */}
-            <div className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]">
+            <div className="group relative flex flex-col justify-between rounded-2xl bg-white p-3 sm:p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem] sm:min-h-[19rem]">
               <div>
-                <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
+                <h3 className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">
                   Ofertas rápidas
                 </h3>
                 {productCard2List.length > 0 ? (
@@ -126,19 +126,19 @@ export function LandingHero({
             {productCard3 ? (
               <Link
                 href={getProductMarketplaceHref(productCard3)}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]"
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-3 sm:p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem] sm:min-h-[19rem]"
               >
                 <div>
-                  <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
+                  <h3 className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">
                     Destacado hoy
                   </h3>
-                  <div className="flex justify-center mb-3">
+                  <div className="flex justify-center mb-2 sm:mb-3">
                     <ProductThumbnail
-                      className="h-24 w-24 object-contain rounded-lg bg-transparent p-1"
+                      className="h-20 w-20 sm:h-24 sm:w-24 object-contain rounded-lg bg-transparent p-1"
                       product={productCard3}
                     />
                   </div>
-                  <h4 className="text-xs font-bold text-slate-800 line-clamp-2 leading-tight">
+                  <h4 className="text-[11px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight">
                     {productCard3.title}
                   </h4>
                 </div>
@@ -157,19 +157,19 @@ export function LandingHero({
             {productCard4 ? (
               <Link
                 href={getProductMarketplaceHref(productCard4)}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]"
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-3 sm:p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem] sm:min-h-[19rem]"
               >
                 <div>
-                  <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
+                  <h3 className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">
                     Recomendado
                   </h3>
-                  <div className="flex justify-center mb-3">
+                  <div className="flex justify-center mb-2 sm:mb-3">
                     <ProductThumbnail
-                      className="h-24 w-24 object-contain rounded-lg bg-transparent p-1"
+                      className="h-20 w-20 sm:h-24 sm:w-24 object-contain rounded-lg bg-transparent p-1"
                       product={productCard4}
                     />
                   </div>
-                  <h4 className="text-xs font-bold text-slate-800 line-clamp-2 leading-tight">
+                  <h4 className="text-[11px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight">
                     {productCard4.title}
                   </h4>
                 </div>
@@ -188,19 +188,19 @@ export function LandingHero({
             {productCard5 ? (
               <Link
                 href={getProductMarketplaceHref(productCard5)}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]"
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-3 sm:p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem] sm:min-h-[19rem]"
               >
                 <div>
-                  <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
+                  <h3 className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">
                     Bajo presupuesto
                   </h3>
-                  <div className="flex justify-center mb-3">
+                  <div className="flex justify-center mb-2 sm:mb-3">
                     <ProductThumbnail
-                      className="h-24 w-24 object-contain rounded-lg bg-transparent p-1"
+                      className="h-20 w-20 sm:h-24 sm:w-24 object-contain rounded-lg bg-transparent p-1"
                       product={productCard5}
                     />
                   </div>
-                  <h4 className="text-xs font-bold text-slate-800 line-clamp-2 leading-tight">
+                  <h4 className="text-[11px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight">
                     {productCard5.title}
                   </h4>
                 </div>
@@ -219,19 +219,19 @@ export function LandingHero({
             {productCard6 ? (
               <Link
                 href={getProductMarketplaceHref(productCard6)}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[19rem]"
+                className="group relative flex flex-col justify-between rounded-2xl bg-white p-3 sm:p-4 shadow-lg ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl min-h-[16rem] sm:min-h-[19rem]"
               >
                 <div>
-                  <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
+                  <h3 className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">
                     Más valorados
                   </h3>
-                  <div className="flex justify-center mb-3">
+                  <div className="flex justify-center mb-2 sm:mb-3">
                     <ProductThumbnail
-                      className="h-24 w-24 object-contain rounded-lg bg-transparent p-1"
+                      className="h-20 w-20 sm:h-24 sm:w-24 object-contain rounded-lg bg-transparent p-1"
                       product={productCard6}
                     />
                   </div>
-                  <h4 className="text-xs font-bold text-slate-800 line-clamp-2 leading-tight">
+                  <h4 className="text-[11px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight">
                     {productCard6.title}
                   </h4>
                 </div>
